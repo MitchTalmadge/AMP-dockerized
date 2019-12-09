@@ -1,0 +1,12 @@
+version: "3"
+services:
+  amp:
+    container_name: amp
+    image: mitchtalmadge/AMP-dockerized
+    ports:
+      - 25570:8080
+    environment:
+      - "UID=120"
+      - "GID=124"
+      - "LICENCE=#########-####-#####-##########"
+    restart: unless-stopped
