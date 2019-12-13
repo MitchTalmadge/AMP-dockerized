@@ -13,8 +13,8 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 **Tested and Working:**
 
- - Minecraft Module
- - McMyAdmin Module
+ - Minecraft
+ - McMyAdmin
  
  **Untested:**
  

@@ -23,7 +23,7 @@ cd /home/amp
 ln -sfn /ampdata .ampdata
 
 # Create Main Instance
-if [ ! -d "./ampdata/instances/Main" ]
+if [ ! -d ".ampdata/instances/Main" ]
 then
 	sudo -u amp ampinstmgr CreateInstance -c "${MODULE}" ADS Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
 fi
