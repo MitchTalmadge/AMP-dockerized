@@ -2,10 +2,11 @@ FROM debian:stretch
 
 ENV UID=1000
 ENV GID=1000
+ENV PORT=8080
 ENV USERNAME=admin
 ENV PASSWORD=password
 ENV LICENCE=notset
-ENV PORT=8080
+ENV MODULE=Minecraft
 
 # Initialize
 RUN apt-get update

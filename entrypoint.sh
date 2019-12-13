@@ -1,8 +1,7 @@
 #!/bin/bash -e
-set -o xtrace
 
 # Create User
-if [ ! `getent group amp` ]
+if [ ! "$(getent group amp)" ]
 then
 	groupadd \
 		--gid "${GID}" \
@@ -20,13 +19,19 @@ fi
 
 # Set up environment
 cd /home/amp
-ln -s /ampdata .ampdata
+ln -sfn /ampdata .ampdata
 
-# Create ADS
-if [ ! -d "./ampdata/instances/ADSMain" ] 
+# Create Main Instance
+if [ ! -d ".ampdata/instances/Main" ]
 then
-	sudo -u amp ampinstmgr CreateInstance ADS ADSMain 0.0.0.0 ${PORT} "${LICENCE}" "${USERNAME}" "${PASSWORD}"
+	sudo -u amp ampinstmgr CreateInstance "${MODULE}" Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
+else
+  # Automatic Licence Reactivation
+  #sudo -u amp ampinstmgr Reactivate Main "${LICENCE}"
+
+  # Automatic AMP Upgrades
+  sudo -u amp ampinstmgr UpgradeAll
 fi
 
-# Launch ADS
-(cd .ampdata/instances/ADSMain && exec sudo -u amp ./AMP_Linux_x86_64)
+# Launch Main Instance
+(cd .ampdata/instances/Main && exec sudo -u amp ./AMP_Linux_x86_64)
