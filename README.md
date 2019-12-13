@@ -10,9 +10,6 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
  I hate installing things.
  
 # Supported Modules
-If you are able to get a module working, please add it to this list and any relevant instructions to our Wiki.
-
-If you are *not* able to get a module working, make an issue and we can work together to figure out a solution.
 
 **Tested and Working:**
 
@@ -22,6 +19,10 @@ If you are *not* able to get a module working, make an issue and we can work tog
  **Untested:**
  
 - [Everything Else](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility)
+
+If you are able to get an untested module working, please add it to the tested list, create an example `docker-compose.yml` config, and add any further instructions to our Wiki.
+
+If you are *not* able to get a module working, make an issue and we can work together to figure out a solution.
 
 # Configuration
 
@@ -68,6 +69,13 @@ host, there's hardly a reason to change it.
   - This volume contains everything AMP needs to run. This includes all your instances, all their game files, 
   the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.
   - Inside the container, this is linked to `/home/amp/.ampdata`. Just in case you were curious.
+
+## HTTPS Support
+Setting up HTTPS is independent of the Docker image. Just follow this [official guide](https://github.com/CubeCoders/AMP/wiki/Setting-up-HTTPS-with-AMP) 
+and when it tells you to access `/home/AMP/.ampdata`, access the `/ampdata` Docker volume instead. It has the same contents.
+To restart the AMP instances, just restart the Docker container.
+
+Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
 
 # Support and Contributing
 
