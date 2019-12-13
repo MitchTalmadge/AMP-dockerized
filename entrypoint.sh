@@ -22,11 +22,11 @@ fi
 cd /home/amp
 ln -sfn /ampdata .ampdata
 
-# Create Main ADS Instance
-if [ ! -d "./ampdata/instances/ADSMain" ] 
+# Create Main Instance
+if [ ! -d "./ampdata/instances/Main" ]
 then
-	sudo -u amp ampinstmgr CreateInstance ADS ADSMain 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
+	sudo -u amp ampinstmgr CreateInstance -c "${MODULE}" ADS Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
 fi
 
-# Launch Main ADS Instance
-(cd .ampdata/instances/ADSMain && exec sudo -u amp ./AMP_Linux_x86_64)
+# Launch Main Instance
+(cd .ampdata/instances/Main && exec sudo -u amp ./AMP_Linux_x86_64)
