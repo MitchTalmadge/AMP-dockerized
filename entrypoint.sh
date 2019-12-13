@@ -27,7 +27,7 @@ then
 	sudo -u amp ampinstmgr CreateInstance -c "${MODULE}" ADS Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
 else
   # Just in case.
-  sudo -u amp ampinstmgr reactivate Main
+  sudo -u amp ampinstmgr Reactivate Main
 fi
 
 # Launch Main Instance
