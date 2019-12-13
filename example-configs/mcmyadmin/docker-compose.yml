@@ -1,0 +1,15 @@
+version: "3"
+services:
+  amp:
+    container_name: amp
+    image: mitchtalmadge/AMP-dockerized:latest
+    ports:
+      - 25565:25565 # Game Port. Format: HOST:CONTAINER
+      - 25570:8080 # Web UI Port.
+    volumes:
+      - ./data:/ampdata # Without a volume, all AMP & game data will be wiped on container restart.
+    environment:
+      - "UID=120" # This user, and the group below, will own the ./data mount specified above.
+      - "GID=124" # When not specified, the user and group will be 1000, 1000 (first non-system user in Linux).
+      - "LICENCE=#########-####-#####-##########" # Your McMyAdmin licence goes here.
+    restart: unless-stopped
