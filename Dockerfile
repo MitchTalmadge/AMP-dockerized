@@ -46,10 +46,11 @@ RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key
 RUN apt-add-repository "deb http://repo.cubecoders.com/ debian/"
 RUN apt update
 
-# Install AMP with srcds dependencies
+# Install AMP with Minecraft and srcds dependencies
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt install -y \
   ampinstmgr \
+  openjdk-8-jre-headless \
   lib32gcc1 \
   lib32stdc++6 \
   lib32tinfo5

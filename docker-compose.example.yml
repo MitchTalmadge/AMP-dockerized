@@ -4,7 +4,10 @@ services:
     container_name: amp
     image: mitchtalmadge/AMP-dockerized
     ports:
+      - 25565:25565
       - 25570:8080
+    volumes:
+      - ./data:/ampdata
     environment:
       - "UID=120"
       - "GID=124"
