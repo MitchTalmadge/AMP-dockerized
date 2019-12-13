@@ -26,8 +26,11 @@ if [ ! -d ".ampdata/instances/Main" ]
 then
 	sudo -u amp ampinstmgr CreateInstance -c "${MODULE}" ADS Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
 else
-  # Just in case.
-  sudo -u amp ampinstmgr Reactivate Main
+  # Automatic Licence Reactivation
+  sudo -u amp ampinstmgr Reactivate Main "${LICENCE}"
+
+  # Automatic AMP Upgrades
+  sudo -u amp ampinstmgr UpgradeAll
 fi
 
 # Launch Main Instance
