@@ -36,9 +36,9 @@ echo "AMP Started."
 
 # Trap SIGTERM for a graceful shutdown
 shutdown() {
-  echo "Shutting down AMP..."
+  echo "Shutting Down AMP..."
   sudo -u amp ampinstmgr StopAll
-  echo "Shutdown complete."
+  echo "Shutdown Complete."
   exit 0
 }
 trap "shutdown" SIGTERM
