@@ -1,5 +1,5 @@
 # AMP-dockerized
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)
+[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized) 
 (`mitchtalmadge/amp-dockerized:latest`)
@@ -13,10 +13,10 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 **Tested and Working:**
 
- - Minecraft
- - McMyAdmin
+- Minecraft
+- McMyAdmin
  
- **Untested:**
+**Untested:**
  
 - [Everything Else](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility)
 
@@ -32,16 +32,18 @@ module in the `example-configs` directory in the [GitHub repo](https://github.co
 ## Environment Variables
 
 ### Licence
+
 | Name      | Description                                                                                                          | Default Value                                         |
 |-----------|----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | `LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/) | No Default. AMP will not boot without a real licence. |
 
 **Important Details:**
-- _Americans:_ This is spelled licenCe not licenSe. Blame Europe.
+- _Americans:_ This is spelled licenCe not licenSe. Got me a few times.
 - When a McMyAdmin licence is provided, the one and only instance will be a Minecraft instance. This cannot be overridden;
  you must buy a new license to use AMP with other/multiple games.
 
 ### Module
+
 | Name     | Description                                                      | Default Value |
 |----------|------------------------------------------------------------------|---------------|
 | `MODULE` | Which Module to use for the main instance created by this image. | `ADS`         |
@@ -72,6 +74,7 @@ If you only want one game instance, you can select from the list of modules belo
 | `StarBound` |                                                                                                               |
     
 ### User/Group
+
 | Name  | Description                                                          | Default Value |
 |-------|----------------------------------------------------------------------|---------------|
 | `UID` | The ID of the user (on the host) who will own the  /ampdata  volume. | `1000`        |
@@ -80,6 +83,7 @@ If you only want one game instance, you can select from the list of modules belo
 When not specified, these both default to ID `1000`; i.e. the first non-system user on the host.
 
 ### Web UI
+
 | Name       | Description                                                                                                                                             | Default Value |
 |------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
 | `PORT`     | The port of the Web UI for the main instance. Since you can map this to any port on the host, there's hardly a reason to change it.                     | `8080`        |
@@ -91,7 +95,9 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 | Mount Point | Description                                                                                                                                                                                                                                                                      |
 |-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot. Inside the container, this is linked to `/home/amp/.ampdata`.|
+
 ## HTTPS Support
+
 Setting up HTTPS is independent of the Docker image. Just follow this [official guide](https://github.com/CubeCoders/AMP/wiki/Setting-up-HTTPS-with-AMP) 
 and when it tells you to access `/home/AMP/.ampdata`, access the `/ampdata` Docker volume instead. It has the same contents.
 To restart the AMP instances, just restart the Docker container.

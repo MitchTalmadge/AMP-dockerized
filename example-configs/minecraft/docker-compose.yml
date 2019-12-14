@@ -1,4 +1,4 @@
-# This configuration creates one McMyAdmin (Minecraft) instance. No ADS instances are created.
+# This configuration creates one Minecraft instance. No ADS instances are created.
 version: "3"
 services:
   amp:
@@ -13,5 +13,5 @@ services:
       - "UID=120" # Change according to which user on the host will own the ampdata volume.
       - "GID=124"
       - "LICENCE=#########-####-#####-##########"
-      - "MODULE=McMyAdmin"
+      - "MODULE=Minecraft"
     restart: unless-stopped
