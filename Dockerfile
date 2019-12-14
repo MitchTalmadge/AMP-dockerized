@@ -6,7 +6,7 @@ ENV PORT=8080
 ENV USERNAME=admin
 ENV PASSWORD=password
 ENV LICENCE=notset
-ENV MODULE=Minecraft
+ENV MODULE=ADS
 
 # Initialize
 RUN apt-get update
