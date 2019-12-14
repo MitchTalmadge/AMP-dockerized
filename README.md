@@ -99,7 +99,7 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 ## HTTPS Support
 
 Setting up HTTPS is independent of the Docker image. Just follow this [official guide](https://github.com/CubeCoders/AMP/wiki/Setting-up-HTTPS-with-AMP) 
-and when it tells you to access `/home/AMP/.ampdata`, access the `/ampdata` Docker volume instead. It has the same contents.
+and when it tells you to access `/home/AMP/.ampdata`, access the volume you mapped on the host instead. It has the same contents.
 To restart the AMP instances, just restart the Docker container.
 
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
