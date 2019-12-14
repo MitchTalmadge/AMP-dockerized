@@ -44,5 +44,5 @@ shutdown() {
 trap "shutdown" SIGTERM
 
 # Sleep
-echo "Sleeping..."
+echo "Entrypoint Sleeping. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
 tail -f /dev/null & wait $!
