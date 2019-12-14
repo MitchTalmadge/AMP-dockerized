@@ -11,7 +11,7 @@ services:
       - 27015:27015 # Example port for GMod server.
       # Add more ports as needed for whatever game servers you'll be running. Create the game instances through ADS web UI.
     volumes:
-      - ./ampdata:/ampdata
+      - ./ampdata:/home/amp/.ampdata
     environment:
       - "UID=120" # Change according to which user on the host will own the ampdata volume.
       - "GID=124"

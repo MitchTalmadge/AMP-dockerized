@@ -92,9 +92,9 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 
 ## Volumes
 
-| Mount Point | Description                                                                                                                                                                                                                                                                      |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot. Inside the container, this is linked to `/home/amp/.ampdata`.|
+| Mount Point           | Description                                                                                                                                                                                                        |
+|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/home/amp/.ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
 
 ## HTTPS Support
 
