@@ -19,7 +19,6 @@ fi
 
 # Set up environment
 cd /home/amp
-ln -sfn /ampdata .ampdata
 
 # Create Main Instance
 if [ ! -d ".ampdata/instances/Main" ]
@@ -31,4 +30,19 @@ else
 fi
 
 # Launch Main Instance
-(cd .ampdata/instances/Main && exec sudo -u amp ./AMP_Linux_x86_64)
+echo "Starting AMP..."
+sudo -u amp ampinstmgr StartInstance Main
+echo "AMP Started."
+
+# Trap SIGTERM for a graceful shutdown
+shutdown() {
+  echo "Shutting down AMP..."
+  sudo -u amp ampinstmgr StopAll
+  echo "Shutdown complete."
+  exit 0
+}
+trap "shutdown" SIGTERM
+
+# Sleep
+echo "Sleeping..."
+tail -f /dev/null & wait $!
