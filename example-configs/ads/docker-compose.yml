@@ -1,0 +1,20 @@
+# This configuration creates one ADS instance, which can be used to create multiple "child" instances.
+# This is a good choice if you want to run multiple game servers, even of different types.
+version: "3"
+services:
+  amp:
+    container_name: amp
+    image: mitchtalmadge/amp-dockerized:latest
+    ports:
+      - 8080:8080
+      - 25565:25565 # Example port for Minecraft server.
+      - 27015:27015 # Example port for GMod server.
+      # Add more ports as needed for whatever game servers you'll be running. Create the game instances through ADS web UI.
+    volumes:
+      - ./ampdata:/ampdata
+    environment:
+      - "UID=120" # Change according to which user on the host will own the ampdata volume.
+      - "GID=124"
+      - "LICENCE=#########-####-#####-##########"
+      - "MODULE=ADS"
+    restart: unless-stopped
