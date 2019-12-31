@@ -124,13 +124,18 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/home/amp/.ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
 
-## HTTPS Support
+## HTTPS / SSL / TLS
 
 Setting up HTTPS is independent of the Docker image. Just follow this [official guide](https://github.com/CubeCoders/AMP/wiki/Setting-up-HTTPS-with-AMP) 
 and when it tells you to access `/home/AMP/.ampdata`, access the volume you mapped on the host instead. It has the same contents.
 To restart the AMP instances, just restart the Docker container.
 
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
+
+# Upgrading AMP
+
+AMP is automatically upgraded to the latest version when the container is restarted. If a newer version of AMP exists
+than the one that is running, it will be downloaded and installed before the instances are started. :D Yay
 
 # Support and Contributing
 
