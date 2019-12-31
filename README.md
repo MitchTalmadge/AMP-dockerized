@@ -29,6 +29,34 @@ If you are *not* able to get a module working, make an issue and we can work tog
 I recommend using Docker Compose to set up the image. Sample configurations are provided for each 
 module in the `example-configs` directory in the [GitHub repo](https://github.com/MitchTalmadge/AMP-dockerized).
 
+## MAC Address (Important! Please read.)
+AMP is designed to detect hardware changes and will de-activate all instances when something significant changes. 
+This is to stop people from sharing pre-activated instances and bypassing the licencing server. One way of detecting
+changes is to look at the MAC address of the host's network card. A change here will de-activate instances.
+
+By default, Docker assigns a new MAC address to a container every time it is restarted. Therefore, unless you want to
+painstakingly re-activate all your instances on every server reboot, you need to assign a permanent MAC address.
+
+For most people, this can be accomplished by generating a random MAC address in Docker's acceptable range.
+The instructions to do so are as follows:
+
+- Visit this page: https://miniwebtool.com/mac-address-generator/
+- Put `02:42:AC` in as the prefix
+- Choose the format with colons `:`
+- Generate
+- Copy the generated MAC and use it when starting the container.
+  - For `docker run`, use the following flag: (Substitute your generated MAC)
+  
+    `--mac-address="02:42:AC:XX:XX:XX"`
+  - For Docker Compose, use the following key next to `image`:
+  
+    `mac_address: 02:42:AC:XX:XX:XX`
+    
+If you have a unique network situation, a random MAC may not work for you. In that case you will need
+to come up with your own solution to prevent address conflicts.
+
+If you need help with any of this, please make an issue.
+
 ## Environment Variables
 
 ### Licence
