@@ -1,4 +1,5 @@
 #!/bin/bash -e
+set -o xtrace
 
 # Create User
 if [ ! "$(getent group amp)" ]
@@ -23,21 +24,22 @@ cd /home/amp
 # Create Main Instance
 if [ ! -d ".ampdata/instances/Main" ]
 then
-	sudo -u amp ampinstmgr CreateInstance "${MODULE}" Main 0.0.0.0 "${PORT}" "${LICENCE}" "${USERNAME}" "${PASSWORD}"
+	su amp --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\""
+	su amp --command "ampinstmgr SetStartBoot Main"
 else
   # Automatic AMP Upgrades
-  sudo -u amp ampinstmgr UpgradeAll
+  su amp --command "ampinstmgr UpgradeAll"
 fi
 
 # Launch Main Instance
 echo "Starting AMP..."
-sudo -u amp ampinstmgr StartInstance Main
+su amp --command "ampinstmgr StartBoot"
 echo "AMP Started."
 
 # Trap SIGTERM for a graceful shutdown
 shutdown() {
   echo "Shutting Down AMP..."
-  sudo -u amp ampinstmgr StopAll
+  su amp --command "ampinstmgr StopAll"
   echo "Shutdown Complete."
   exit 0
 }

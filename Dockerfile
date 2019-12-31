@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM ubuntu:18.04
 
 ENV UID=1000
 ENV GID=1000
@@ -12,8 +12,8 @@ ENV MODULE=ADS
 RUN apt-get update
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y \
-  wget \
-  sudo
+  sudo \
+  wget
 
 # Configure Locales
 ARG DEBIAN_FRONTEND=noninteractive
@@ -47,14 +47,33 @@ RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key
 RUN apt-add-repository "deb http://repo.cubecoders.com/ debian/"
 RUN apt update
 
-# Install AMP with Minecraft and srcds dependencies
+# Install dependencies for various game servers.
+RUN ls -al /usr/local/bin/
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt install -y \
-  ampinstmgr \
   openjdk-8-jre-headless \
+  libcurl4 \
   lib32gcc1 \
   lib32stdc++6 \
   lib32tinfo5
+
+# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt install -y \
+  tmux \
+  wget \
+  git \
+  socat \
+  unzip \
+  iputils-ping
+
+RUN mkdir -p /opt/cubecoders/amp
+WORKDIR /opt/cubecoders/amp
+RUN wget http://cubecoders.com/Downloads/ampinstmgr.zip
+RUN unzip ampinstmgr.zip
+RUN rm -irf ampinstmgr.zip
+RUN ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
+WORKDIR /
 
 # Set up environment
 COPY entrypoint.sh /opt/entrypoint.sh
