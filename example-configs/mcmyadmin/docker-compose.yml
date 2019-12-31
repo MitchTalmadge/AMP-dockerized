@@ -4,6 +4,7 @@ services:
   amp:
     container_name: amp
     image: mitchtalmadge/amp-dockerized:latest
+    mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
     ports:
       - 25565:25565
       - 25570:8080

@@ -5,11 +5,13 @@ services:
   amp:
     container_name: amp
     image: mitchtalmadge/amp-dockerized:latest
+    mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
     ports:
       - 8080:8080
-      - 25565:25565 # Example port for Minecraft server.
+      - 25565:25565 # Example port for Minecraft Java server.
       - 27015:27015 # Example port for GMod server.
-      # Add more ports as needed for whatever game servers you'll be running. Create the game instances through ADS web UI.
+      # Add more ports as needed for whatever game servers you'll be running.
+      # Create the game instances through the ADS web UI.
     volumes:
       - ./ampdata:/home/amp/.ampdata
     environment:
