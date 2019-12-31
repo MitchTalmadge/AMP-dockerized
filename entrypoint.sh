@@ -1,5 +1,5 @@
 #!/bin/bash -e
-set -o xtrace
+set +o xtrace
 
 # Create User
 if [ ! "$(getent group amp)" ]
