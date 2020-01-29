@@ -1,4 +1,5 @@
 # This configuration creates one Minecraft instance. No ADS instances are created.
+# If you intend to run more than one game server, use the ADS module instead.
 version: "3"
 services:
   amp:
