@@ -7,7 +7,8 @@ services:
     image: mitchtalmadge/amp-dockerized:latest
     mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
     ports:
-      - 27015:27015/udp # Notice how this is UDP, not TCP.
+      - 27015:27015/udp # Game Server. Notice how this is UDP, not TCP.
+      - 8080:8080 # Web Server
     volumes:
       - ./ampdata:/home/amp/.ampdata
     environment:
