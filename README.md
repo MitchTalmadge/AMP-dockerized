@@ -13,8 +13,11 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 **Tested and Working:**
 
-- Minecraft
 - McMyAdmin
+- Minecraft Java Edition
+- Minecraft Bedrock Edition
+- srcds (GMod, TF2, ...)
+- StarBound
  
 **Untested:**
  
@@ -56,6 +59,28 @@ If you have a unique network situation, a random MAC may not work for you. In th
 to come up with your own solution to prevent address conflicts.
 
 If you need help with any of this, please make an issue.
+
+## Ports
+
+Here's a rough (and potentially incorrect) list of default ports for the various modules. Each module also exposes port 8080 for the Web UI (can be changed with environment variables). If you find an inaccuracy, open an issue!
+
+| Module Name | Default Ports                                                                                                                                                                                  |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `ADS`       | No additional ports.                                                                                                                                                                           |
+| `ARK`       | UDP 27015 & UDP 7777 & UDP 7778 ([Guide](https://ark.gamepedia.com/Dedicated_Server_Setup))                                                                                                    |
+| `Arma3`     | UDP 2302 to UDP 2306 ([Guide](https://community.bistudio.com/wiki/Arma_3_Dedicated_Server))                                                                                                    |
+| `Factorio`  | UDP 34197 ([Guide](https://wiki.factorio.com/Multiplayer))                                                                                                                                     |
+| `FiveM`     | UDP 30120 & TCP 30120 ([Guide](https://docs.fivem.net/docs/server-manual/setting-up-a-server/))                                                                                                 |
+| `Generic`   | Completely depends on what you do with it.                                                                                                                                                     |
+| `JC2MP`     | UDP 27015 & UDP 7777 & UDP 7778 (Unconfirmed!)                                                                                                                                                 |
+| `McMyAdmin` | TCP 25565                                                                                                                                                                                      |
+| `Minecraft` | TCP 25565 (Java) or UDP 19132 (Bedrock)                                                                                                                                                        |
+| `Rust`      | UDP 28015 ([Guide](https://developer.valvesoftware.com/wiki/Rust_Dedicated_Server))                                                                                                            |
+| `SevenDays` | UDP 26900 to UDP 26902 & TCP 26900 ([Guide](https://developer.valvesoftware.com/wiki/7_Days_to_Die_Dedicated_Server))                                                                          |
+| `srcds`     | Depends on the game. Usually UDP 27015. ([List of games under srcds](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility#applications-running-under-the-srcds-module)) |
+| `StarBound` | TCP 21025 ([Guide](https://starbounder.org/Guide:Setting_Up_Multiplayer))                                                                                                                      |
+
+Just a quick note about ports: some games use TCP, some games use UDP. Make sure you are using the right protocol. Don't fall into the trap of accidentally mapping a TCP port for a UDP game -- you won't be able to connect. 
 
 ## Environment Variables
 
@@ -124,13 +149,18 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/home/amp/.ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
 
-## HTTPS Support
+## HTTPS / SSL / TLS
 
 Setting up HTTPS is independent of the Docker image. Just follow this [official guide](https://github.com/CubeCoders/AMP/wiki/Setting-up-HTTPS-with-AMP) 
 and when it tells you to access `/home/AMP/.ampdata`, access the volume you mapped on the host instead. It has the same contents.
 To restart the AMP instances, just restart the Docker container.
 
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
+
+# Upgrading AMP
+
+AMP is automatically upgraded to the latest version when the container is restarted. If a newer version of AMP exists
+than the one that is running, it will be downloaded and installed before the instances are started. :D Yay
 
 # Support and Contributing
 

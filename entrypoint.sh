@@ -1,5 +1,5 @@
 #!/bin/bash -e
-set -o xtrace
+set +o xtrace
 
 # Create User
 if [ ! "$(getent group amp)" ]
@@ -25,7 +25,6 @@ cd /home/amp
 if [ ! -d ".ampdata/instances/Main" ]
 then
 	su amp --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\""
-	su amp --command "ampinstmgr SetStartBoot Main"
 else
   # Automatic AMP Upgrades
   su amp --command "ampinstmgr UpgradeAll"
@@ -33,6 +32,7 @@ fi
 
 # Launch Main Instance
 echo "Starting AMP..."
+su amp --command "ampinstmgr SetStartBoot Main"
 su amp --command "ampinstmgr StartBoot"
 echo "AMP Started."
 

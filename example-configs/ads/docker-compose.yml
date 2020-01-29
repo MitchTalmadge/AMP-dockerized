@@ -9,7 +9,7 @@ services:
     ports:
       - 8080:8080
       - 25565:25565 # Example port for Minecraft Java server.
-      - 27015:27015 # Example port for GMod server.
+      - 27015:27015/udp # Example port for GMod/TF2/etc. source game servers. (Notice how it uses UDP, not TCP.)
       # Add more ports as needed for whatever game servers you'll be running.
       # Create the game instances through the ADS web UI.
     volumes:
