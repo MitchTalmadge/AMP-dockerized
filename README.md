@@ -13,8 +13,9 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 **Tested and Working:**
 
-- Minecraft
 - McMyAdmin
+- Minecraft Java Edition
+- Minecraft Bedrock Edition
  
 **Untested:**
  
