@@ -16,7 +16,7 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 - McMyAdmin
 - Minecraft Java Edition
 - Minecraft Bedrock Edition
-- GMod
+- srcds (GMod, TF2, ...)
 - StarBound
  
 **Untested:**
