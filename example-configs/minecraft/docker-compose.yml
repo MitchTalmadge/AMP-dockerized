@@ -6,8 +6,9 @@ services:
     image: mitchtalmadge/amp-dockerized:latest
     mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
     ports:
-      - 25565:25565
-      - 25570:8080
+      - 25565:25565 # For Java Edition (TCP)
+      - 19132:19132/udp # For Bedrock Edition (UDP)
+      - 25570:8080 # Maybe you already have something running on 8080, so we could map to 25570. Remove if you want to use 8080.
     volumes:
       - ./ampdata:/home/amp/.ampdata
     environment:
