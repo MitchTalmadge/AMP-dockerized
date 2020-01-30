@@ -123,7 +123,7 @@ If you only want one game instance, you can select from the list of modules belo
 | `Minecraft` |                                                                                                               |
 | `Rust`      |                                                                                                               |
 | `SevenDays` |                                                                                                               |
-| `srcds`     | Source-based games like TF2, GMod, etc.                                                                       |
+| `srcds`     | Source-based games like TF2, GMod, etc. [Full List](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility#applications-running-under-the-srcds-module)                                                                    |
 | `StarBound` |                                                                                                               |
     
 ### User/Group
