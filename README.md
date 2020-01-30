@@ -128,7 +128,7 @@ Here are the accepted values for the `MODULE` variable:
 
 | Name  | Description                                                          | Default Value |
 |-------|----------------------------------------------------------------------|---------------|
-| `UID` | The ID of the user (on the host) who will own the  /ampdata  volume. | `1000`        |
+| `UID` | The ID of the user (on the host) who will own the ampdata volume.    | `1000`        |
 | `GID` | The ID of the group for the user above.                              | `1000`        |
 
 When not specified, these both default to ID `1000`; i.e. the first non-system user on the host.
@@ -145,7 +145,7 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 
 | Mount Point           | Description                                                                                                                                                                                                        |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/home/amp/.ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
+| `/home/amp/.ampdata`  | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
 
 ## HTTPS / SSL / TLS
 
