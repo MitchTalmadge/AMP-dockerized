@@ -101,36 +101,34 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 |----------|------------------------------------------------------------------|---------------|
 | `MODULE` | Which Module to use for the main instance created by this image. | `ADS`         |
 
-If you want to run multiple game servers, 
-  you can use the default value of `ADS` (Application Deployment Service) which allows you to create various modules
-  from the web ui.
+To run multiple game servers under this image, use the default value of `ADS` (Application Deployment Service) which allows you to create various modules from the web ui.
 
 To be clear, this Docker image creates ONE instance by default. If you want to create more, use `ADS` as the first
-  instance and create the rest with the web ui.
+  instance, and create the rest with the web UI. Otherwise, you can pick any other module from the list.
 
-If you only want one game instance, you can select from the list of modules below:
+Here are the accepted values for the `MODULE` variable:
 
 | Module Name | Description                                                                                                   |
 |-------------|---------------------------------------------------------------------------------------------------------------|
-| `ADS`       | Application Deployment Service. Used to manage multiple modules.                                              |
+| `ADS`       | Application Deployment Service. Used to manage multiple modules. Need multiple game servers? Pick this.       |
 | `ARK`       |                                                                                                               |
 | `Arma3`     |                                                                                                               |
 | `Factorio`  |                                                                                                               |
 | `FiveM`     |                                                                                                               |
-| `Generic`   | Only for advanced users.                                                                                      |
-| `JC2MP`     |                                                                                                               |
+| `Generic`   | For advanced users. You can craft your own module for any other game using this. You're on your own here.     |
+| `JC2MP`     | Just Cause 2                                                                                                  |
 | `McMyAdmin` | If you have a McMyAdmin Licence, this will be picked for you no matter what. It is equivalent to `Minecraft`. |
-| `Minecraft` |                                                                                                               |
+| `Minecraft` | Includes Java (Spigot, Bukkit, Paper, etc.) and Bedrock servers.                                              |
 | `Rust`      |                                                                                                               |
-| `SevenDays` |                                                                                                               |
-| `srcds`     | Source-based games like TF2, GMod, etc.                                                                       |
+| `SevenDays` | 7-Days To Die                                                                                                 |
+| `srcds`     | Source-based games like TF2, GMod, etc. [Full List](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility#applications-running-under-the-srcds-module)                                                                    |
 | `StarBound` |                                                                                                               |
     
 ### User/Group
 
 | Name  | Description                                                          | Default Value |
 |-------|----------------------------------------------------------------------|---------------|
-| `UID` | The ID of the user (on the host) who will own the  /ampdata  volume. | `1000`        |
+| `UID` | The ID of the user (on the host) who will own the ampdata volume.    | `1000`        |
 | `GID` | The ID of the group for the user above.                              | `1000`        |
 
 When not specified, these both default to ID `1000`; i.e. the first non-system user on the host.
@@ -147,7 +145,7 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 
 | Mount Point           | Description                                                                                                                                                                                                        |
 |-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/home/amp/.ampdata`  | This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
+| `/home/amp/.ampdata`  | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
 
 ## HTTPS / SSL / TLS
 
