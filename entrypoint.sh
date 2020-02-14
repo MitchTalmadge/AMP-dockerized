@@ -30,9 +30,12 @@ else
   su amp --command "ampinstmgr UpgradeAll"
 fi
 
-# Launch Main Instance
+# Make Main instance start on boot if disabled.
+echo "Ensuring Main Instance will Start on Boot..."
+su amp --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boot\" | grep \"No\" && ampinstmgr SetStartBoot Main || true"
+
+# Startup
 echo "Starting AMP..."
-su amp --command "ampinstmgr SetStartBoot Main"
 su amp --command "ampinstmgr StartBoot"
 echo "AMP Started."
 
