@@ -12,8 +12,9 @@ ENV MODULE=ADS
 RUN apt-get update
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y \
+  jq \
   sudo \
-  wget
+  wget 
 
 # Configure Locales
 ARG DEBIAN_FRONTEND=noninteractive
@@ -73,10 +74,10 @@ RUN wget http://cubecoders.com/Downloads/ampinstmgr.zip
 RUN unzip ampinstmgr.zip
 RUN rm -irf ampinstmgr.zip
 RUN ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
-WORKDIR /
-RUN mkdir /home/amp
 
 # Set up environment
+RUN mkdir -p /home/amp/.ampdata
+WORKDIR /home/amp
 COPY entrypoint /opt/entrypoint
 RUN chmod -R +x /opt/entrypoint
 
