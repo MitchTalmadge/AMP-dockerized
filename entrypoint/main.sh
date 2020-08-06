@@ -23,8 +23,8 @@ fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
-# Set up environment
-cd /home/amp
+# Update the instance manager.
+/bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
 # Create Main Instance or update existing
 if [ ! -d ".ampdata/instances/Main" ]; then
