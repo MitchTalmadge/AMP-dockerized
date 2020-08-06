@@ -30,10 +30,10 @@ cd /home/amp
 if [ ! -d ".ampdata/instances/Main" ]
 then
 	echo "Creating Main Instance... (This can take a while)"
-	su ${APP_USER} --command "ampinstmgr --silent CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\""
+	su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep -v -E '\[[-#]+\]'
 else
   echo "Updating Instances... (This can take a while)"
-  su ${APP_USER} --command "ampinstmgr --silent UpgradeAll"
+  su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep -v -E '\[[-#]+\]'
 fi
 
 # Set Main instance to start on boot if not already.
