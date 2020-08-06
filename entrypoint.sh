@@ -27,7 +27,7 @@ chown -R ${APP_USER}:${APP_GROUP} /home/amp
 cd /home/amp
 
 # Create Main Instance or update existing
-if [ ! -d ".ampdata/instances/Main" ]
+if [ ! -d ".ampdata/instances/Main" ] 
 then
 	echo "Creating Main Instance... (This can take a while)"
 	su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep -v -E '\[[-#]+\]'
