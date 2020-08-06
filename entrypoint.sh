@@ -2,6 +2,7 @@
 set +o xtrace
 
 # Create user and group that will own the config files (if they don't exist already).
+echo "Ensuring AMP User Exists..."
 if [ ! "$(getent group ${GID})" ]; then
   # Create group
 	addgroup \
@@ -25,16 +26,17 @@ chown -R ${APP_USER}:${APP_GROUP} /home/amp
 # Set up environment
 cd /home/amp
 
-# Create Main Instance
+# Create Main Instance or update existing
 if [ ! -d ".ampdata/instances/Main" ]
 then
-	su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\""
+	echo "Creating Main Instance... (This can take a while)"
+	su ${APP_USER} --command "ampinstmgr --silent CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\""
 else
-  # Automatic AMP Upgrades
-  su ${APP_USER} --command "ampinstmgr UpgradeAll"
+  echo "Updating Instances... (This can take a while)"
+  su ${APP_USER} --command "ampinstmgr --silent UpgradeAll"
 fi
 
-# Make Main instance start on boot if disabled.
+# Set Main instance to start on boot if not already.
 echo "Ensuring Main Instance will Start on Boot..."
 su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boot\" | grep \"No\" && ampinstmgr SetStartBoot Main || true"
 

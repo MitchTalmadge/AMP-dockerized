@@ -19,7 +19,7 @@ RUN apt-get install -y \
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y locales
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-    locale-gen
+  locale-gen
 ENV LANG en_US.UTF-8  
 ENV LANGUAGE en_US:en  
 ENV LC_ALL en_US.UTF-8     
@@ -74,6 +74,7 @@ RUN unzip ampinstmgr.zip
 RUN rm -irf ampinstmgr.zip
 RUN ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
 WORKDIR /
+RUN mkdir /home/amp
 
 # Set up environment
 COPY entrypoint.sh /opt/entrypoint.sh
