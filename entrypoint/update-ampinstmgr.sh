@@ -23,6 +23,6 @@ echo "Downloading latest ampinstmgr... (This can take ~5 minutes; CubeCoders lim
 wget -nv http://cubecoders.com/Downloads/ampinstmgr.zip -O /tmp/ampinstmgr.zip
 echo "Download complete. Updating ampinstmgr..."
 unzip -o /tmp/ampinstmgr.zip -d /opt/cubecoders/amp/
-cat HEAD_VERSION >${CURRENT_VERSION_FILE}
+echo ${HEAD_VERSION} >${CURRENT_VERSION_FILE}
 rm -irf /tmp/ampinstmgr.zip
 echo "Update complete."
