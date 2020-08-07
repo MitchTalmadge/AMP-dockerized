@@ -69,10 +69,7 @@ RUN apt install -y \
   iputils-ping
 
 RUN mkdir -p /opt/cubecoders/amp
-WORKDIR /opt/cubecoders/amp
-RUN wget http://cubecoders.com/Downloads/ampinstmgr.zip
-RUN unzip ampinstmgr.zip
-RUN rm -irf ampinstmgr.zip
+# ampinstmgr will be installed later when the image is started for the first time.
 RUN ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
 
 # Set up environment
