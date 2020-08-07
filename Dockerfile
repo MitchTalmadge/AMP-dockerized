@@ -68,12 +68,12 @@ RUN apt install -y \
   unzip \
   iputils-ping
 
-RUN mkdir -p /opt/cubecoders/amp
-# ampinstmgr will be installed later when the image is started for the first time.
-RUN ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
+# Create ampinstmgr install directory.
+# ampinstmgr will be downloaded later when the image is started for the first time.
+RUN mkdir -p /home/amp/.ampdata/bin
+RUN ln -s /home/amp/.ampdata/bin/ampinstmgr /usr/local/bin/ampinstmgr
 
 # Set up environment
-RUN mkdir -p /home/amp/.ampdata
 WORKDIR /home/amp
 COPY entrypoint /opt/entrypoint
 RUN chmod -R +x /opt/entrypoint
