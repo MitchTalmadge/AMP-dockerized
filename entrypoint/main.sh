@@ -37,16 +37,14 @@ fi
 if [ ! -z "$NIGHTLY" ]; then
   # Nightly
   echo "Setting all instances to use Nightly updates..."
-  for d in ".ampdata/instances/*/"; do
-    INSTANCE_NAME=$(basename $d)
+  su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | while read -r INSTANCE_NAME; do
     echo "> ${INSTANCE_NAME}:"
     su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly" | grep --line-buffered -v -E '\[[-#]+\]'
   done
 else
   # MainLine
   echo "Setting all instances to use MainLine updates..."
-  for d in ".ampdata/instances/*/"; do
-    INSTANCE_NAME=$(basename $d)
+  su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | while read -r INSTANCE_NAME; do
     echo "> ${INSTANCE_NAME}:"
     su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True" | grep --line-buffered -v -E '\[[-#]+\]'
   done
