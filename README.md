@@ -141,6 +141,12 @@ When not specified, these both default to ID `1000`; i.e. the first non-system u
 | `USERNAME` | The username of the admin user created on first boot.                                                                                                   | `admin`       |
 | `PASSWORD` | The password of the admin user. This value is only used when creating the new user. If you use the default value, please change it after first sign-in. | `password`    |
 
+### Nightly Builds
+| Name  | Description                                                          | Default Value |
+|-------|----------------------------------------------------------------------|---------------|
+| `NIGHTLY` | Set to any value to enable nightly builds. All instances will be migrated to nightly builds on next image start. Unset this variable to go back to MainLine builds (stable releases).    | UNSET        |
+
+
 ## Volumes
 
 | Mount Point           | Description                                                                                                                                                                                                        |
