@@ -40,7 +40,7 @@ if [ ! -z "$NIGHTLY" ]; then
   for d in ".ampdata/instances/*/"; do
     INSTANCE_NAME=$(basename $d)
     echo "> ${INSTANCE_NAME}:"
-    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly"
+    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly" | grep --line-buffered -v -E '\[[-#]+\]'
   done
 else
   # MainLine
@@ -48,7 +48,7 @@ else
   for d in ".ampdata/instances/*/"; do
     INSTANCE_NAME=$(basename $d)
     echo "> ${INSTANCE_NAME}:"
-    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True"
+    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True" | grep --line-buffered -v -E '\[[-#]+\]'
   done
 fi
 
