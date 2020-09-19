@@ -38,14 +38,14 @@ if [ ! -z "$NIGHTLY" ]; then
   # Nightly
   echo "Setting all instances to use Nightly updates..."
   for d in ".ampdata/instances/*/"; do
-    INSTANCE_NAME=$(dirname $d)
+    INSTANCE_NAME=$(basename $d)
     su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly"
   done
 else
   # MainLine
   echo "Setting all instances to use MainLine updates..."
   for d in ".ampdata/instances/*/"; do
-    INSTANCE_NAME=$(dirname $d)
+    INSTANCE_NAME=$(basename $d)
     su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True"
   done
 fi
