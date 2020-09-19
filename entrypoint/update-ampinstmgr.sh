@@ -3,10 +3,8 @@ set +o xtrace
 
 AMP_BIN_DIR=/home/amp/.ampdata/bin/
 CURRENT_VERSION_FILE=/home/amp/.ampdata/ampinstmgr-version.txt
-
-echo "Checking for ampinstmgr updates..."
-
 VERSIONS_PATH=/tmp/AMPVersions.json
+
 wget -nv https://cubecoders.com/AMPVersions.json -O ${VERSIONS_PATH}
 HEAD_VERSION=$(cat ${VERSIONS_PATH} | jq -r '.InstanceManagerCLI')
 rm -irf ${VERSIONS_PATH}
