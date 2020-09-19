@@ -24,16 +24,35 @@ APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
 # Update the instance manager.
+echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
-# Create Main Instance or update existing
+# Create Main Instance if not exists
 if [ ! -d ".ampdata/instances/Main" ]; then
   echo "Creating Main Instance... (This can take a while)"
   su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
-else
-  echo "Updating Instances... (This can take a while)"
-  su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
+
+# Set instances to MainLine or Nightly
+if [ ! -z "$NIGHTLY" ]; then
+  # Nightly
+  echo "Setting all instances to use Nightly updates..."
+  for d in ".ampdata/instances/*/"; do
+    INSTANCE_NAME=$(dirname $d)
+    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly"
+  done
+else
+  # MainLine
+  echo "Setting all instances to use MainLine updates..."
+  for d in ".ampdata/instances/*/"; do
+    INSTANCE_NAME=$(dirname $d)
+    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True"
+  done
+fi
+
+# Upgrade instances
+echo "Upgrading Instances... (This can take a while)"
+su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 
 # Set Main instance to start on boot if not already.
 echo "Ensuring Main Instance will Start on Boot..."
