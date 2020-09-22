@@ -25,7 +25,8 @@ RUN apt-get update && \
 
 
 # Configure Locales
-RUN apt-get install -y --no-install-recommends locales && \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends locales && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -40,7 +41,8 @@ ENV LC_ALL en_US.UTF-8
 
 
 # Add Mono apt source
-RUN apt install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     apt-transport-https \
     dirmngr \
     software-properties-common \
@@ -57,7 +59,7 @@ RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E03280
 
 
 # Install Mono Certificates
-RUN apt update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends ca-certificates-mono && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -76,8 +78,8 @@ RUN apt-add-repository "deb http://repo.cubecoders.com/ debian/"
 
 # Install dependencies for various game servers.
 RUN ls -al /usr/local/bin/
-RUN apt update && \
-    apt install -y \
+RUN apt-get update && \
+    apt-get install -y \
     openjdk-8-jre-headless \
     libcurl4 \
     lib32gcc1 \
@@ -93,8 +95,8 @@ RUN apt update && \
 
 # Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt update && \
-    apt install -y --no-install-recommends \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     tmux \
     wget \
     git \
