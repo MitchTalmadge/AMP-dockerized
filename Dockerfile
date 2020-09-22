@@ -15,8 +15,8 @@ RUN apt-get install -y \
   jq \
   wget && \
   apt-get -y clean && \
-	apt-get -y autoremove --purge && \
-	rm -rf \
+  apt-get -y autoremove --purge && \
+  rm -rf \
   /tmp/* \
   /var/lib/apt/lists/* \
   /var/tmp/*
@@ -39,8 +39,8 @@ RUN apt install -y \
   gnupg \
   ca-certificates && \
   apt-get -y clean && \
-	apt-get -y autoremove --purge && \
-	rm -rf \
+  apt-get -y autoremove --purge && \
+  rm -rf \
   /tmp/* \
   /var/lib/apt/lists/* \
   /var/tmp/*
@@ -52,8 +52,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
     apt-get install -y ca-certificates-mono && \
     apt-get -y clean && \
-	  apt-get -y autoremove --purge && \
-	  rm -rf \
+    apt-get -y autoremove --purge && \
+    rm -rf \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
@@ -75,8 +75,8 @@ RUN apt update && \
     lib32stdc++6 \
     lib32tinfo5 && \
     apt-get -y clean && \
-	  apt-get -y autoremove --purge && \
-	  rm -rf \
+    apt-get -y autoremove --purge && \
+    rm -rf \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
@@ -92,8 +92,8 @@ RUN apt update && \
     unzip \
     iputils-ping && \
     apt-get -y clean && \
-	  apt-get -y autoremove --purge && \
-	  rm -rf \
+    apt-get -y autoremove --purge && \
+    rm -rf \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
