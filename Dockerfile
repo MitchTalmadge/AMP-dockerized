@@ -13,8 +13,13 @@ RUN apt-get update
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y \
   jq \
-  sudo \
-  wget 
+  wget && \
+  apt-get -y clean && \
+	apt-get -y autoremove --purge && \
+	rm -rf \
+  /tmp/* \
+  /var/lib/apt/lists/* \
+  /var/tmp/*
 
 # Configure Locales
 ARG DEBIAN_FRONTEND=noninteractive
@@ -32,41 +37,66 @@ RUN apt install -y \
   dirmngr \
   software-properties-common \
   gnupg \
-  ca-certificates
+  ca-certificates && \
+  apt-get -y clean && \
+	apt-get -y autoremove --purge && \
+	rm -rf \
+  /tmp/* \
+  /var/lib/apt/lists/* \
+  /var/tmp/*
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 RUN echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list
-RUN apt update
 
 # Install Mono Certificates
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get install -y ca-certificates-mono
+RUN apt update && \
+    apt-get install -y ca-certificates-mono && \
+    apt-get -y clean && \
+	  apt-get -y autoremove --purge && \
+	  rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem
 RUN cert-sync /tmp/cacert.pem
 
 # Add CubeCoders apt source
 RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key
 RUN apt-add-repository "deb http://repo.cubecoders.com/ debian/"
-RUN apt update
 
 # Install dependencies for various game servers.
 RUN ls -al /usr/local/bin/
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt install -y \
-  openjdk-8-jre-headless \
-  libcurl4 \
-  lib32gcc1 \
-  lib32stdc++6 \
-  lib32tinfo5
+RUN apt update && \
+    apt install -y \
+    openjdk-8-jre-headless \
+    libcurl4 \
+    lib32gcc1 \
+    lib32stdc++6 \
+    lib32tinfo5 && \
+    apt-get -y clean && \
+	  apt-get -y autoremove --purge && \
+	  rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
 # Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt install -y \
-  tmux \
-  wget \
-  git \
-  socat \
-  unzip \
-  iputils-ping
+RUN apt update && \
+    apt install -y \
+    tmux \
+    wget \
+    git \
+    socat \
+    unzip \
+    iputils-ping && \
+    apt-get -y clean && \
+	  apt-get -y autoremove --purge && \
+	  rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
 # Create ampinstmgr install directory.
 # ampinstmgr will be downloaded later when the image is started for the first time.
