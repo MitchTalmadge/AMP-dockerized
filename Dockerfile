@@ -11,15 +11,15 @@ ENV MODULE=ADS
 # Initialize
 RUN apt-get update
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get install -y \
-  jq \
-  wget && \
-  apt-get -y clean && \
-  apt-get -y autoremove --purge && \
-  rm -rf \
-  /tmp/* \
-  /var/lib/apt/lists/* \
-  /var/tmp/*
+RUN apt-get install -y --no-install-recommends \
+    jq \
+    wget && \
+    apt-get -y clean && \
+    apt-get -y autoremove --purge && \
+    rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
 # Configure Locales
 ARG DEBIAN_FRONTEND=noninteractive
@@ -32,25 +32,25 @@ ENV LC_ALL en_US.UTF-8
 
 # Add Mono apt source
 ARG DEBIAN_FRONTEND=noninteractive
-RUN apt install -y \
-  apt-transport-https \
-  dirmngr \
-  software-properties-common \
-  gnupg \
-  ca-certificates && \
-  apt-get -y clean && \
-  apt-get -y autoremove --purge && \
-  rm -rf \
-  /tmp/* \
-  /var/lib/apt/lists/* \
-  /var/tmp/*
+RUN apt install -y --no-install-recommends \
+    apt-transport-https \
+    dirmngr \
+    software-properties-common \
+    gnupg \
+    ca-certificates && \
+    apt-get -y clean && \
+    apt-get -y autoremove --purge && \
+    rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
 RUN echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list
 
 # Install Mono Certificates
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
-    apt-get install -y ca-certificates-mono && \
+    apt-get install -y --no-install-recommends ca-certificates-mono && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -84,7 +84,7 @@ RUN apt update && \
 # Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update && \
-    apt install -y \
+    apt install -y --no-install-recommends \
     tmux \
     wget \
     git \
