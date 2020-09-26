@@ -28,7 +28,7 @@ echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
 # Create Main Instance if not exists
-if [ ! -d ".ampdata/instances/Main" ]; then
+if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then
   echo "Creating Main Instance... (This can take a while)"
   su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
