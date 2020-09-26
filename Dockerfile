@@ -8,7 +8,7 @@ ENV PASSWORD=password
 ENV LICENCE=notset
 ENV MODULE=ADS
 
-ARG DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 
 
 # Initialize
