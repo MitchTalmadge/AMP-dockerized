@@ -23,6 +23,9 @@ fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
+# Ensure a Licence was set
+if [ -z ${LICENCE+x} ]; then echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"; exit 1; fi
+
 # Update the instance manager.
 echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh
@@ -60,7 +63,7 @@ su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boo
 
 # Startup
 echo "Starting AMP..."
-su ${APP_USER} --command "ampinstmgr StartBoot"
+su ${APP_USER} --command "ampinstmgr StartBoot" &
 echo "AMP Started."
 
 # Trap SIGTERM for a graceful shutdown
