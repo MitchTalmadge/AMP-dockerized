@@ -21,6 +21,8 @@ if [ ! "$(getent passwd ${UID})" ]; then
   amp
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
+
+echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
 # Update the instance manager.
