@@ -2,7 +2,7 @@
 set +o xtrace
 
 # Create user and group that will own the config files (if they don't exist already).
-echo "Ensuring AMP User Exists..."
+echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
   # Create group
   addgroup \
