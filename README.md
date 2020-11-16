@@ -171,4 +171,7 @@ than the one that is running, it will be downloaded and installed before the ins
 I am a full time college student and have very little time. Still, if you need help, post an issue in the repo and 
 work as a community to help each other out. I welcome pull requests if you discuss the changes in an issue first.
 
+## Unraid
+If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
+
 Thank you for your help! Enjoy :)
