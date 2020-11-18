@@ -109,8 +109,8 @@ RUN apt-get update && \
 
 # Create ampinstmgr install directory.
 # ampinstmgr will be downloaded later when the image is started for the first time.
-RUN mkdir -p /opt/cubecoders/amp && \
-    ln -s /opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr
+RUN mkdir -p /home/amp/.ampdata/.bin && \
+    ln -s /home/amp/.ampdata/.bin/ampinstmgr /usr/local/bin/ampinstmgr
 
 
 # Set up environment
