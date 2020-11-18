@@ -1,7 +1,7 @@
 #!/bin/bash -e
 set +o xtrace
 
-AMP_BIN_DIR=/opt/cubecoders/amp/
+AMP_BIN_DIR=/home/amp/.ampdata/.bin/
 CURRENT_VERSION_FILE=/home/amp/.ampdata/ampinstmgr-version.txt
 VERSIONS_PATH=/tmp/AMPVersions.json
 
