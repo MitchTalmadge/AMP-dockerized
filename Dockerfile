@@ -34,7 +34,7 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
-  locale-gen
+    locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -84,7 +84,8 @@ RUN apt-get update && \
     libcurl4 \
     lib32gcc1 \
     lib32stdc++6 \
-    lib32tinfo5 && \
+    lib32tinfo5 \
+    xz-utils && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
