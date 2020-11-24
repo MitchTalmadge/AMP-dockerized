@@ -63,7 +63,7 @@ su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boo
 
 # Startup
 echo "Starting AMP..."
-su ${APP_USER} --command "ampinstmgr StartBoot" &
+su ${APP_USER} --command "ampinstmgr StartBoot"
 echo "AMP Started."
 
 # Trap SIGTERM for a graceful shutdown
