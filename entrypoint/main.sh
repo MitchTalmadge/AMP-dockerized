@@ -2,7 +2,7 @@
 set +o xtrace
 
 # Create user and group that will own the config files (if they don't exist already).
-echo "Ensuring AMP User Exists..."
+echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
   # Create group
   addgroup \
@@ -21,6 +21,8 @@ if [ ! "$(getent passwd ${UID})" ]; then
   amp
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
+
+echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
 # Ensure a Licence was set

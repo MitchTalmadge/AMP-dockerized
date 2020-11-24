@@ -81,7 +81,8 @@ RUN apt-get update && \
     libcurl4 \
     lib32gcc1 \
     lib32stdc++6 \
-    lib32tinfo5 && \
+    lib32tinfo5 \
+    xz-utils && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
