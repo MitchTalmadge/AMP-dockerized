@@ -25,6 +25,9 @@ APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
+# Ensure a Licence was set
+if [ ${LICENCE} = "notset" ]; then echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"; exit 1; fi
+
 # Update the instance manager.
 echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh

@@ -1,7 +1,7 @@
 #!/bin/bash -e
 set +o xtrace
 
-AMP_BIN_DIR=/home/amp/.ampdata/bin/
+AMP_BIN_DIR=/home/amp/.ampdata/.bin/
 CURRENT_VERSION_FILE=/home/amp/.ampdata/ampinstmgr-version.txt
 VERSIONS_PATH=/tmp/AMPVersions.json
 
@@ -22,10 +22,9 @@ else
 fi
 
 echo "Downloading latest ampinstmgr... (This can take ~5 minutes; CubeCoders limits their download speeds to a crawl.)"
-DL_PATH=/tmp/ampinstmgr.zip
-wget -nv http://cubecoders.com/Downloads/ampinstmgr.zip -O ${DL_PATH}
+wget -nv -c -P ${AMP_BIN_DIR} http://cubecoders.com/Downloads/ampinstmgr.zip 
 echo "Download complete. Updating ampinstmgr..."
-unzip -o ${DL_PATH} -d ${AMP_BIN_DIR}
+unzip -o ${AMP_BIN_DIR}ampinstmgr.zip -d ${AMP_BIN_DIR}
+rm -rf ${AMP_BIN_DIR}ampinstmgr.zip
 echo ${HEAD_VERSION} >${CURRENT_VERSION_FILE}
-rm -irf ${DL_PATH}
 echo "Update complete."
