@@ -22,7 +22,7 @@ else
 fi
 
 echo "Downloading latest ampinstmgr... (This can take ~5 minutes; CubeCoders limits their download speeds to a crawl.)"
-wget -nv -P ${AMP_BIN_DIR} http://cubecoders.com/Downloads/ampinstmgr.zip 
+wget -nv -c -P ${AMP_BIN_DIR} http://cubecoders.com/Downloads/ampinstmgr.zip 
 echo "Download complete. Updating ampinstmgr..."
 unzip -o ${AMP_BIN_DIR}ampinstmgr.zip -d ${AMP_BIN_DIR}
 rm -rf ${AMP_BIN_DIR}ampinstmgr.zip
