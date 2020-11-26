@@ -23,9 +23,9 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
  
 - [Everything Else](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility)
 
-If you are able to get an untested module working, please add it to the tested list, create an example `docker-compose.yml` config, and add any further instructions to our Wiki.
+If you are able to get an untested module working, please make an issue about it so we can add it to the tested list and create an example `docker-compose.yml` config!
 
-If you are *not* able to get a module working, make an issue and we can work together to figure out a solution.
+If you are *not* able to get a module working, make an issue and we can work together to figure out a solution!
 
 # Configuration
 
