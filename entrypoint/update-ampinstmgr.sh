@@ -6,10 +6,10 @@ AMP_BIN_DIR=/home/amp/.ampdata/.bin
 OLD_AMP_BIN_DIR=/home/amp/.ampdata/bin
 mkdir -p ${AMP_BIN_DIR}
 if [ -d ${OLD_AMP_BIN_DIR} ]; then
-  shopt -s nullglob # Allow mv to succeed even if old bin is empty
-  mv ${OLD_AMP_BIN_DIR}/* ${AMP_BIN_DIR} && \
+  if [ -z "$(ls -A ${OLD_AMP_BIN_DIR})" ]; then
+    mv ${OLD_AMP_BIN_DIR}/* ${AMP_BIN_DIR}
+  fi
   rm -r ${OLD_AMP_BIN_DIR}
-  shopt -u nullglob
 fi
 
 CURRENT_VERSION_FILE=/home/amp/.ampdata/ampinstmgr-version.txt
