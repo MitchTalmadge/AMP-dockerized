@@ -26,15 +26,19 @@ echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
 # Ensure a Licence was set
-if [ ${LICENCE} = "notset" ]; then echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"; exit 1; fi
+if [ ${LICENCE} = "notset" ]; then
+  echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
+  exit 1
+fi
 
 # Update the instance manager.
 echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
 # Create Main Instance if not exists
+echo "Making sure Main instance exists..."
 if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then
-  echo "Creating Main Instance... (This can take a while)"
+  echo "Creating Main instance... (This can take a while)"
   su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
 

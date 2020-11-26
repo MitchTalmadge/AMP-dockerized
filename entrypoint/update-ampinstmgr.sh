@@ -2,11 +2,12 @@
 set +o xtrace
 
 # Migrate bin dir
-AMP_BIN_DIR=/home/amp/.ampdata/.bin/
+AMP_BIN_DIR=/home/amp/.ampdata/.bin
+OLD_AMP_BIN_DIR=/home/amp/.ampdata/bin
 mkdir -p ${AMP_BIN_DIR}
-if [ -d /home/amp/.ampdata/bin ]; then
-  mv /home/amp/.ampdata/bin/* /home/amp/.ampdata/.bin/ && \
-  rm /home/amp/.ampdata/bin
+if [ -d ${OLD_AMP_BIN_DIR} ]; then
+  mv ${OLD_AMP_BIN_DIR}/* ${AMP_BIN_DIR} && \
+  rm -r ${OLD_AMP_BIN_DIR}
 fi
 
 CURRENT_VERSION_FILE=/home/amp/.ampdata/ampinstmgr-version.txt
@@ -29,9 +30,9 @@ else
 fi
 
 echo "Downloading latest ampinstmgr... (This can take ~5 minutes; CubeCoders limits their download speeds to a crawl.)"
-wget -nv -c -P ${AMP_BIN_DIR} http://cubecoders.com/Downloads/ampinstmgr.zip
+wget -nv -c -P ${AMP_BIN_DIR}/ http://cubecoders.com/Downloads/ampinstmgr.zip
 echo "Download complete. Updating ampinstmgr..."
-unzip -o ${AMP_BIN_DIR}ampinstmgr.zip -d ${AMP_BIN_DIR}
-rm -rf ${AMP_BIN_DIR}ampinstmgr.zip
+unzip -o ${AMP_BIN_DIR}/ampinstmgr.zip -d ${AMP_BIN_DIR}/
+rm -rf ${AMP_BIN_DIR}/ampinstmgr.zip
 echo ${HEAD_VERSION} >${CURRENT_VERSION_FILE}
 echo "Update complete."
