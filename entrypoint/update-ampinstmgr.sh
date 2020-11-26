@@ -3,6 +3,7 @@ set +o xtrace
 
 # Migrate bin dir
 AMP_BIN_DIR=/home/amp/.ampdata/.bin/
+mkdir -p AMP_BIN_DIR
 if [ -d /home/amp/.ampdata/bin ]; then
   mv /home/amp/.ampdata/bin/* /home/amp/.ampdata/.bin/ && \
   rm /home/amp/.ampdata/bin
