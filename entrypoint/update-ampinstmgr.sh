@@ -6,7 +6,7 @@ AMP_BIN_DIR=/home/amp/.ampdata/.bin
 OLD_AMP_BIN_DIR=/home/amp/.ampdata/bin
 mkdir -p ${AMP_BIN_DIR}
 if [ -d ${OLD_AMP_BIN_DIR} ]; then
-  if [ -z "$(ls -A ${OLD_AMP_BIN_DIR})" ]; then
+  if [ ! -z "$(ls -A ${OLD_AMP_BIN_DIR})" ]; then
     mv ${OLD_AMP_BIN_DIR}/* ${AMP_BIN_DIR}
   fi
   rm -r ${OLD_AMP_BIN_DIR}
