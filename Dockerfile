@@ -77,12 +77,23 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
 RUN ls -al /usr/local/bin/
 RUN apt-get update && \
     apt-get install -y \
-    openjdk-8-jre-headless \
-    libcurl4 \
+    # Dependencies for Minecraft
+    openjdk-11-jre-headless \
+    # ----
+    # Dependencies for srcds (TF2, GMod, etc.)
     lib32gcc1 \
     lib32stdc++6 \
-    lib32tinfo5 \
+    lib32z1 \
+    libbz2-1.0:i386 \
+    libcurl3-gnutls:i386 \
+    libcurl4 \
+    libncurses5:i386 \
+    libsdl2-2.0-0:i386 \ 
+    libtinfo5:i386 \
+    # ----
+    # Dependencies for Factorio
     xz-utils && \
+    # ----
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
