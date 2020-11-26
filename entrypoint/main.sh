@@ -1,6 +1,15 @@
 #!/bin/bash -e
 set +o xtrace
 
+echo "----------------------"
+echo "Starting AMP-Dockerized..."
+echo "----------------------"
+echo "Note: This is an UNOFFICIAL IMAGE for CubeCoders AMP. This was created by the community, NOT CubeCoders."
+echo "Please, DO NOT contact CubeCoders (Discord or otherwise) for technical support when using this image. They do not support nor endorse this image and will not help you."
+echo "Instead, please direct support requests to https://github.com/MitchTalmadge/AMP-dockerized/issues where we are happy to help you!"
+echo "Thank you!!"
+echo "----------------------\n\n"
+
 # Create user and group that will own the config files (if they don't exist already).
 echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
