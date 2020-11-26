@@ -75,7 +75,8 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
 
 # Install dependencies for various game servers.
 RUN ls -al /usr/local/bin/
-RUN apt-get update && \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
     apt-get install -y \
     # Dependencies for Minecraft
     openjdk-11-jre-headless \
