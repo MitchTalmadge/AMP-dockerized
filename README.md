@@ -8,6 +8,16 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 *Disclaimer:* I (Mitch Talmadge) did not create AMP and am not associated with CubeCoders. I simply made it work with Docker because
  I hate installing things.
+
+# Getting Help
+
+**Please DO NOT bug CubeCoders for support without first asking here; they do not support nor endorse this image and will tell you that you are on your own.**
+
+If you need help with AMP when using this image, please [create an issue](https://github.com/MitchTalmadge/AMP-dockerized/issues/new) and we will figure it out! 
+
+## Unraid
+If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
+
  
 # Supported Modules
 
@@ -23,9 +33,9 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
  
 - [Everything Else](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility)
 
-If you are able to get an untested module working, please add it to the tested list, create an example `docker-compose.yml` config, and add any further instructions to our Wiki.
+If you are able to get an untested module working, please make an issue about it so we can add it to the tested list and create an example `docker-compose.yml` config!
 
-If you are *not* able to get a module working, make an issue and we can work together to figure out a solution.
+If you are *not* able to get a module working, make an issue and we can work together to figure out a solution!
 
 # Configuration
 
@@ -166,12 +176,6 @@ Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in 
 AMP is automatically upgraded to the latest version when the container is restarted. If a newer version of AMP exists
 than the one that is running, it will be downloaded and installed before the instances are started. :D Yay
 
-# Support and Contributing
+# Contributing
 
-I am a full time college student and have very little time. Still, if you need help, post an issue in the repo and 
-work as a community to help each other out. I welcome pull requests if you discuss the changes in an issue first.
-
-## Unraid
-If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
-
-Thank you for your help! Enjoy :)
+I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!!

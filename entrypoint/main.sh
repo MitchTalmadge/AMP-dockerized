@@ -1,6 +1,18 @@
 #!/bin/bash -e
 set +o xtrace
 
+echo "----------------------"
+echo "Starting AMP-Dockerized..."
+echo "----------------------"
+echo "Note: This is an UNOFFICIAL IMAGE for CubeCoders AMP. This was created by the community, NOT CubeCoders."
+echo "Please, DO NOT contact CubeCoders (Discord or otherwise) for technical support when using this image."
+echo "They do not support nor endorse this image and will not help you."
+echo "Instead, please direct support requests to https://github.com/MitchTalmadge/AMP-dockerized/issues."
+echo "We are happy to help you there!"
+echo "Thank you!!"
+echo "----------------------"
+echo ""
+
 # Create user and group that will own the config files (if they don't exist already).
 echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
@@ -25,13 +37,20 @@ APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
+# Ensure a Licence was set
+if [ ${LICENCE} = "notset" ]; then
+  echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
+  exit 1
+fi
+
 # Update the instance manager.
 echo "Checking for ampinstmgr updates..."
 /bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
 # Create Main Instance if not exists
+echo "Making sure Main instance exists..."
 if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then
-  echo "Creating Main Instance... (This can take a while)"
+  echo "Creating Main instance... (This can take a while)"
   su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
 
