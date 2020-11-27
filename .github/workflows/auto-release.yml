@@ -39,14 +39,9 @@ jobs:
         # git push
 
       # - name: Compare AMP Versions
-      #   # Gracefully exit if the versions are not different. (The "are different" case flows through to the next rule).
+      #   # Gracefully exit if the versions are not different. (The "are different" case flows through to the next step).
       #   run: |
       #     ( \
       #     test $(jq -r ".AMPCore" .github/workflows/data/AMPVersions.json) != $(jq -r ".AMPCore" /tmp/AMPVersions.json) || \
       #     test $(jq -r ".InstanceManagerCLI" .github/workflows/data/AMPVersions.json) != $(jq -r ".InstanceManagerCLI" /tmp/AMPVersions.json) \
       #     ) || exit
-  
-      - name: Tag New Release
-        run: |
-          mv /tmp/AMPVersions.json .github/workflows/data/AMPVersions.json
-          
