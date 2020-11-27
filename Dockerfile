@@ -9,12 +9,12 @@ ENV LICENCE=notset
 ENV MODULE=ADS
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG AMPINSTMGR_VERSION=2.0.8.6
 
 # Initialize
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     jq \
+    sed \
     wget && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -106,7 +106,9 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
+# Manually install ampinstmgr by extracting it from the deb package.
+# Docker doesn't have systemctl and other things that AMP's deb postinst expects,
+# so we can't use apt to install ampinstmgr.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     software-properties-common \
@@ -128,6 +130,10 @@ RUN apt-get update && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
+
+# Get the latest AMP Core to pre-cache upgrades.
+RUN wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
+    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip
 
 # Set up environment
 COPY entrypoint /opt/entrypoint
