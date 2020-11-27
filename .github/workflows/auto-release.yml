@@ -1,6 +1,7 @@
-name: Auto Deploy
+name: Auto Release
 
 on:
+  push:
   workflow_dispatch:
   schedule:
     - cron: "0 21 * * *" # Every day at 2 PM MST (Releases tend to show up sometime around noon)
@@ -30,7 +31,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git tag -a $NEW_TAG -m "Auto-Deploy Latest AMP Version"
+          git tag -a $NEW_TAG -m "Auto-Release Latest AMP Version"
           
         # git push
 
