@@ -1,0 +1,48 @@
+name: Auto Deploy
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 21 * * *" # Every day at 2 PM MST (Releases tend to show up sometime around noon)
+
+jobs:
+  check-for-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: sudo apt-get install -y --no-install-recommends wget jq
+
+      - name: Download AMP Versions
+        run: wget https://cubecoders.com/AMPVersions.json -O .github/workflows/data/AMPVersions.json
+
+      - name: Compute Tag
+        run: |
+          echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep '^[0-9]$' -m 1)" >> $GITHUB_ENV
+          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "NEW_TAG=$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" >> $GITHUB_ENV
+
+      - name: Compare and Tag
+        run: |
+          git diff-index --quiet HEAD -- && exit
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git tag -a $NEW_TAG -m "Auto-Deploy Latest AMP Version"
+          
+        # git push
+
+      # - name: Compare AMP Versions
+      #   # Gracefully exit if the versions are not different. (The "are different" case flows through to the next rule).
+      #   run: |
+      #     ( \
+      #     test $(jq -r ".AMPCore" .github/workflows/data/AMPVersions.json) != $(jq -r ".AMPCore" /tmp/AMPVersions.json) || \
+      #     test $(jq -r ".InstanceManagerCLI" .github/workflows/data/AMPVersions.json) != $(jq -r ".InstanceManagerCLI" /tmp/AMPVersions.json) \
+      #     ) || exit
+  
+      - name: Tag New Release
+        run: |
+          mv /tmp/AMPVersions.json .github/workflows/data/AMPVersions.json
+          
