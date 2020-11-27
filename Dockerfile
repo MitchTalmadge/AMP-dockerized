@@ -120,7 +120,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends --download-only ampinstmgr && \
     # Extract ampinstmgr from downloaded package
     mkdir -p /tmp/ampinstmgr && \
-    dpkg-deb -x /var/cache/apt/archives/ampinstmgr-*.deb /tmp/ampinstmgr && \
+    dpkg-deb -x /var/cache/apt/archives/ampinstmgr_*.deb /tmp/ampinstmgr && \
     mv /tmp/ampinstmgr/opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
