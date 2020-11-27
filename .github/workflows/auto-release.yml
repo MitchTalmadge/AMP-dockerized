@@ -18,12 +18,11 @@ jobs:
       - name: Download AMP Versions
         run: wget https://cubecoders.com/AMPVersions.json -O .github/workflows/data/AMPVersions.json
 
-      - name: Compute Tag
+      - name: Parse Versions
         run: |
           echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep '^[0-9]$' -m 1)" >> $GITHUB_ENV
           echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
           echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
-          echo "NEW_TAG=${LATEST_RELEASE_VERSION}-ampcore${AMP_CORE_VERSION}-ampinstmgr${AMP_INST_MGR_VERSION}" >> $GITHUB_ENV
 
       - name: Compare and Tag
         run: |
@@ -31,7 +30,7 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git tag -m "Auto-Release Latest AMP Version" -a $NEW_TAG
+          git tag -m "Auto-Release Latest AMP Version" -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION"
           
         # git push
 
