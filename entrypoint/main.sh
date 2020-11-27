@@ -43,10 +43,6 @@ if [ ${LICENCE} = "notset" ]; then
   exit 1
 fi
 
-# Update the instance manager.
-echo "Checking for ampinstmgr updates..."
-/bin/bash /opt/entrypoint/update-ampinstmgr.sh
-
 # Create Main Instance if not exists
 echo "Making sure Main instance exists..."
 if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then

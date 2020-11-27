@@ -9,7 +9,7 @@ ENV LICENCE=notset
 ENV MODULE=ADS
 
 ARG DEBIAN_FRONTEND=noninteractive
-
+ARG AMPINSTMGR_VERSION=2.0.8.6
 
 # Initialize
 RUN apt-get update && \
@@ -73,33 +73,31 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
     cert-sync /tmp/cacert.pem
 
 
-# Install dependencies for various game servers.
+# Install AMP dependencies
 RUN ls -al /usr/local/bin/
 RUN apt-get update && \
     apt-get install -y \
-    openjdk-8-jre-headless \
-    libcurl4 \
-    lib32gcc1 \
-    lib32stdc++6 \
-    lib32tinfo5 \
-    xz-utils && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
-
-
-# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    # --------------------
+    # Dependencies for AMP:
     tmux \
     git \
     socat \
     unzip \
     iputils-ping \
-    procps && \
+    procps \
+    # --------------------
+    # Dependencies for Minecraft:
+    openjdk-8-jre-headless \
+    # --------------------
+    # Dependencies for srcds (TF2, GMod, ...)
+    libcurl4 \
+    lib32gcc1 \
+    lib32stdc++6 \
+    lib32tinfo5 \
+    # --------------------
+    # Dependencies for Factorio:
+    xz-utils && \
+    # --------------------
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -107,12 +105,28 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-
-# Create ampinstmgr install directory.
-# ampinstmgr will be downloaded later when the image is started for the first time.
-RUN mkdir -p /home/amp/.ampdata/.bin && \
-    ln -s /home/amp/.ampdata/.bin/ampinstmgr /usr/local/bin/ampinstmgr
-
+# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    software-properties-common \
+    dirmngr \
+    apt-transport-https && \
+    # Add CubeCoders repository and key
+    apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+    apt-add-repository "deb http://repo.cubecoders.com/ debian/" && \
+    apt-get update && \
+    # Just download (don't actually install) ampinstmgr
+    apt-get install -y --no-install-recommends --download-only ampinstmgr && \
+    # Extract ampinstmgr from downloaded package
+    mkdir -p /tmp/ampinstmgr && \
+    dpkg-dev -x /var/cache/apt/archives/ampinstmgr-*.deb /tmp/ampinstmgr && \
+    mv /tmp/ampinstmgr/opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr && \
+    apt-get -y clean && \
+    apt-get -y autoremove --purge && \
+    rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
 # Set up environment
 COPY entrypoint /opt/entrypoint
