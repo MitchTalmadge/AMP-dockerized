@@ -1,7 +1,7 @@
 ﻿{
     "InstanceManager": "2.0.6.0",
-    "InstanceManagerCLI": "2.0.8.6",
-	"AMPCoreMinimum": "2.0.0.0",
+    "InstanceManagerCLI": "2.0.8.5",
+    "AMPCoreMinimum": "2.0.0.0",
     "AMPCore": "2.0.8.6",
     "ReleaseNotes": "https://support.cubecoders.com/thread/amp-2-0-8-6-europa-release-notes/",
     "ModuleVersions": {
