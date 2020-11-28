@@ -23,7 +23,6 @@ jobs:
 
       - name: Parse Versions
         run: |
-          echo "Releases: $(git tag -l --sort=-refname)"
           echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep '^[0-9]$' -m 1)" >> $GITHUB_ENV
           echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
           echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' .github/workflows/data/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
@@ -35,6 +34,7 @@ jobs:
           git config user.email github-actions@github.com
           git add .
           git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto-Release Latest AMP Version" 
+          echo "Releases: $(git tag -l --sort=-refname)"
           
         # git push
 
