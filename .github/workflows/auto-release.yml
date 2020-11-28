@@ -5,6 +5,9 @@ on:
   workflow_dispatch: 
   schedule:
     - cron: "0 21 * * *" # Every day at 2 PM MST (Releases tend to show up sometime around noon)
+  release:
+    types:
+      - created
 
 jobs:
   check-for-updates:
@@ -16,21 +19,17 @@ jobs:
           fetch-depth: 0 
 
       - name: Download AMP Versions
-        run: wget https://cubecoders.com/AMPVersions.json -O AMPVersions.json
+        run: wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json
 
       - name: Parse Versions
         run: |
           echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep -E '^v?[0-9]$' -m 1)" >> $GITHUB_ENV
-          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
-          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
 
-      - name: Compare and Tag
+      - name: Create Tag
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git --no-pager diff --cached 
-          git diff --cached --quiet && { echo "Already up-to-date"; exit; }
-          git commit -am "Auto Update AMP Versions"
-          git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto Release Latest AMP Version" 
+          git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto Release Latest AMP Version" || { echo "Already up-to-date"; exit; }
           git push --follow-tags
