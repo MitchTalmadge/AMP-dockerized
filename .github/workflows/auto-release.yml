@@ -32,8 +32,8 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git --no-pager diff
-          git diff --quiet && { echo "Already up-to-date"; exit; }
+          git --no-pager diff --cached 
+          git diff --cached --quiet && { echo "Already up-to-date"; exit; }
           git commit -am "Auto Update AMP Versions"
           git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto Release Latest AMP Version" 
           git push --follow-tags
