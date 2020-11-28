@@ -43,9 +43,11 @@ if [ ${LICENCE} = "notset" ]; then
   exit 1
 fi
 
-# Update the instance manager.
-echo "Checking for ampinstmgr updates..."
-/bin/bash /opt/entrypoint/update-ampinstmgr.sh
+# Copy the pre-cached AMP Core from the image into the location AMP expects.
+# This will allow upgrades to use the cache and not need to do any downloads.
+echo "Copying AMP Core..."
+mkdir -p /home/amp/.ampdata/instances/
+cp /opt/AMPCache* /home/amp/.ampdata/instances/
 
 # Create Main Instance if not exists
 echo "Making sure Main instance exists..."
@@ -72,7 +74,7 @@ else
 fi
 
 # Upgrade instances
-echo "Upgrading Instances... (This can take a while)"
+echo "Upgrading Instances..."
 su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 
 # Set Main instance to start on boot if not already.

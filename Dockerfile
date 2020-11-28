@@ -10,11 +10,11 @@ ENV MODULE=ADS
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-
 # Initialize
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     jq \
+    sed \
     wget && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -73,33 +73,32 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
     cert-sync /tmp/cacert.pem
 
 
-# Install dependencies for various game servers.
+# Install AMP dependencies
 RUN ls -al /usr/local/bin/
 RUN apt-get update && \
     apt-get install -y \
-    openjdk-8-jre-headless \
-    libcurl4 \
-    lib32gcc1 \
-    lib32stdc++6 \
-    lib32tinfo5 \
-    xz-utils && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
-
-
-# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+    # --------------------
+    # Dependencies for AMP:
     tmux \
     git \
     socat \
     unzip \
     iputils-ping \
-    procps && \
+    procps \
+    # --------------------
+    # Dependencies for Minecraft:
+    openjdk-8-jre-headless \
+    # --------------------
+    # Dependencies for srcds (TF2, GMod, ...)
+    libcurl4 \
+    lib32gcc1 \
+    lib32stdc++6 \
+    lib32tinfo5 \
+    # --------------------
+    # Dependencies for Factorio:
+    xz-utils \
+    # --------------------
+    && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -107,12 +106,34 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
+# Manually install ampinstmgr by extracting it from the deb package.
+# Docker doesn't have systemctl and other things that AMP's deb postinst expects,
+# so we can't use apt to install ampinstmgr.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    software-properties-common \
+    dirmngr \
+    apt-transport-https && \
+    # Add CubeCoders repository and key
+    apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+    apt-add-repository "deb http://repo.cubecoders.com/ debian/" && \
+    apt-get update && \
+    # Just download (don't actually install) ampinstmgr
+    apt-get install -y --no-install-recommends --download-only ampinstmgr && \
+    # Extract ampinstmgr from downloaded package
+    mkdir -p /tmp/ampinstmgr && \
+    dpkg-deb -x /var/cache/apt/archives/ampinstmgr_*.deb /tmp/ampinstmgr && \
+    mv /tmp/ampinstmgr/opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr && \
+    apt-get -y clean && \
+    apt-get -y autoremove --purge && \
+    rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/*
 
-# Create ampinstmgr install directory.
-# ampinstmgr will be downloaded later when the image is started for the first time.
-RUN mkdir -p /home/amp/.ampdata/.bin && \
-    ln -s /home/amp/.ampdata/.bin/ampinstmgr /usr/local/bin/ampinstmgr
-
+# Get the latest AMP Core to pre-cache upgrades.
+RUN wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
+    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip
 
 # Set up environment
 COPY entrypoint /opt/entrypoint
