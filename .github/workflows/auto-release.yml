@@ -7,7 +7,7 @@ on:
     - cron: "0 21 * * *" # Every day at 2 PM MST (Releases tend to show up sometime around noon)
   release:
     types:
-      - created
+      - created 
 
 jobs:
   check-for-updates:
