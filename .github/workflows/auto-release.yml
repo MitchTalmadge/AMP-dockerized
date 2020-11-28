@@ -23,7 +23,7 @@ jobs:
 
       - name: Parse Versions
         run: |
-          echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep '^[0-9]$' -m 1)" >> $GITHUB_ENV
+          echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-refname | grep '^v?[0-9]$' -m 1)" >> $GITHUB_ENV
           echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
           echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
 
