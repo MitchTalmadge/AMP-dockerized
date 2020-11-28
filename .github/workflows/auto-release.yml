@@ -35,13 +35,4 @@ jobs:
           git config user.email github-actions@github.com
           git add .
           git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto-Release Latest AMP Version" 
-          
-        # git push
-
-      # - name: Compare AMP Versions
-      #   # Gracefully exit if the versions are not different. (The "are different" case flows through to the next step).
-      #   run: |
-      #     ( \
-      #     test $(jq -r ".AMPCore" .github/workflows/data/AMPVersions.json) != $(jq -r ".AMPCore" /tmp/AMPVersions.json) || \
-      #     test $(jq -r ".InstanceManagerCLI" .github/workflows/data/AMPVersions.json) != $(jq -r ".InstanceManagerCLI" /tmp/AMPVersions.json) \
-      #     ) || exit
+          git push
