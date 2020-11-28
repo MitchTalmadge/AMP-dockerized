@@ -5,8 +5,7 @@ on:
   schedule:
     - cron: "0 * * * *" # Every hour
   release:
-    types:
-      - created 
+    types: [released] 
 
 jobs:
   check-for-updates:
@@ -15,6 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          ref: master
           fetch-depth: 0 
 
       - name: Download AMP Versions
