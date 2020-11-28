@@ -1,7 +1,6 @@
 name: Auto Release
 
 on:
-  push:
   workflow_dispatch: 
   schedule:
     - cron: "0 21 * * *" # Every day at 2 PM MST (Releases tend to show up sometime around noon)
