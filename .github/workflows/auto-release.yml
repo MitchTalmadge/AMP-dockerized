@@ -34,5 +34,6 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
-          git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto-Release Latest AMP Version" 
+          git commit -am "Auto Update AMP Versions"
+          git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto Release Latest AMP Version" 
           git push --follow-tags
