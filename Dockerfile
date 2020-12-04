@@ -87,7 +87,7 @@ RUN apt-get update && \
     procps \
     # --------------------
     # Dependencies for Minecraft:
-    openjdk-8-jre-headless \
+    openjdk-11-jre-headless \
     # --------------------
     # Dependencies for srcds (TF2, GMod, ...)
     libcurl4 \
