@@ -88,6 +88,7 @@ RUN apt-get update && \
     # --------------------
     # Dependencies for Minecraft:
     openjdk-11-jre-headless \
+    openjdk-8-jre-headless \
     # --------------------
     # Dependencies for srcds (TF2, GMod, ...)
     libcurl4 \
