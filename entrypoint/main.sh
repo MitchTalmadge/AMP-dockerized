@@ -95,6 +95,11 @@ shutdown() {
 }
 trap "shutdown" SIGTERM
 
+# Java 11 Notice
+echo "----------------------"
+echo "NOTICE: Java 11 is the new default in this image. If you require Java 8 (e.g. for old Minecraft servers), you may select it through the Java Configuration section in the AMP Web UI. Otherwise, Java 11 will be used automatically."
+echo "----------------------"
+
 # Sleep
 echo "Entrypoint Sleeping. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
 tail -f /dev/null &
