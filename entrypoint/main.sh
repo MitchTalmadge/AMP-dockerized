@@ -38,7 +38,7 @@ echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
 # Set Timezone
-echo "Setting timezone..."
+echo "Setting timezone from TZ env var..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
 dpkg-reconfigure --frontend noninteractive tzdata
 

@@ -13,6 +13,7 @@ services:
     environment:
       - "UID=120" # Change according to which user on the host will own the ampdata volume.
       - "GID=124"
+      - "TZ=Etc/UTC" # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       - "LICENCE=#########-####-#####-##########"
       - "MODULE=McMyAdmin"
     restart: unless-stopped

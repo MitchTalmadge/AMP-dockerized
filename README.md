@@ -144,6 +144,13 @@ Here are the accepted values for the `MODULE` variable:
 
 When not specified, these both default to ID `1000`; i.e. the first non-system user on the host.
 
+### Timezone
+| Name | Description                                                          | Default Value |
+|------|----------------------------------------------------------------------|---------------|
+| `TZ` | The timezone to use in the container. Pick from the "TZ database name" column on [this page](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)   | `Etc/UTC`        |
+
+Example: `TZ=America/Denver`
+
 ### Web UI
 
 | Name       | Description                                                                                                                                             | Default Value |
