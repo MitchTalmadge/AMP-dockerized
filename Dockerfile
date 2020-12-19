@@ -16,6 +16,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     jq \
     sed \
+    tzdata \
     wget && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \

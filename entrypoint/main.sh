@@ -40,7 +40,7 @@ chown -R ${APP_USER}:${APP_GROUP} /home/amp
 # Set Timezone
 echo "Setting timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
-echo "Current timezone is $(date +%Z)"
+dpkg-reconfigure --frontend noninteractive tzdata
 
 # Ensure a Licence was set
 if [ ${LICENCE} = "notset" ]; then
