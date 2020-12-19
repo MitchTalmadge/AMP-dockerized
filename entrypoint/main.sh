@@ -37,6 +37,11 @@ APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
+# Set Timezone
+echo "Setting timezone from TZ env var..."
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
+dpkg-reconfigure --frontend noninteractive tzdata
+
 # Ensure a Licence was set
 if [ ${LICENCE} = "notset" ]; then
   echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
