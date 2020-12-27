@@ -34,6 +34,13 @@ if [ ! "$(getent passwd ${UID})" ]; then
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 
+# Copy the pre-cached AMP Core from the image into the location AMP expects.
+# This will allow upgrades to use the cache and not need to do any downloads.
+echo "Copying AMP Core..."
+mkdir -p /home/amp/.ampdata/instances/
+cp /opt/AMPCache* /home/amp/.ampdata/instances/
+
+# Let all volume data be owned by the new user.
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
@@ -47,12 +54,6 @@ if [ ${LICENCE} = "notset" ]; then
   echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
   exit 1
 fi
-
-# Copy the pre-cached AMP Core from the image into the location AMP expects.
-# This will allow upgrades to use the cache and not need to do any downloads.
-echo "Copying AMP Core..."
-mkdir -p /home/amp/.ampdata/instances/
-cp /opt/AMPCache* /home/amp/.ampdata/instances/
 
 # Create Main Instance if not exists
 echo "Making sure Main instance exists..."
