@@ -13,6 +13,12 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+# Copy the pre-cached AMP Core from the image into the location AMP expects.
+# This will allow upgrades to use the cache and not need to do any downloads.
+echo "Copying AMP Core..."
+mkdir -p /home/amp/.ampdata/instances/
+cp /opt/AMPCache* /home/amp/.ampdata/instances/
+
 # Create user and group that will own the config files (if they don't exist already).
 echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
@@ -33,12 +39,6 @@ if [ ! "$(getent passwd ${UID})" ]; then
   amp
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
-
-# Copy the pre-cached AMP Core from the image into the location AMP expects.
-# This will allow upgrades to use the cache and not need to do any downloads.
-echo "Copying AMP Core..."
-mkdir -p /home/amp/.ampdata/instances/
-cp /opt/AMPCache* /home/amp/.ampdata/instances/
 
 # Let all volume data be owned by the new user.
 echo "Ensuring correct file permissions..."
