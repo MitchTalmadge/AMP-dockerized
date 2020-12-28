@@ -13,6 +13,12 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+# Copy the pre-cached AMP Core from the image into the location AMP expects.
+# This will allow upgrades to use the cache and not need to do any downloads.
+echo "Copying AMP Core..."
+mkdir -p /home/amp/.ampdata/instances/
+cp /opt/AMPCache* /home/amp/.ampdata/instances/
+
 # Create user and group that will own the config files (if they don't exist already).
 echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
@@ -34,6 +40,7 @@ if [ ! "$(getent passwd ${UID})" ]; then
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 
+# Let all volume data be owned by the new user.
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
@@ -47,12 +54,6 @@ if [ ${LICENCE} = "notset" ]; then
   echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
   exit 1
 fi
-
-# Copy the pre-cached AMP Core from the image into the location AMP expects.
-# This will allow upgrades to use the cache and not need to do any downloads.
-echo "Copying AMP Core..."
-mkdir -p /home/amp/.ampdata/instances/
-cp /opt/AMPCache* /home/amp/.ampdata/instances/
 
 # Create Main Instance if not exists
 echo "Making sure Main instance exists..."
