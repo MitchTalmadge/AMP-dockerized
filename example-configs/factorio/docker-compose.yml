@@ -1,0 +1,20 @@
+# This configuration creates one Factorio instance. No ADS instances are created.
+# If you intend to run more than one game server, use the ADS module instead.
+version: "3"
+services:
+  amp:
+    container_name: amp
+    image: mitchtalmadge/amp-dockerized:latest
+    mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
+    ports:
+      - 34197:34197/udp # Game Server
+      - 8080:8080 # Web Server
+    volumes:
+      - ./ampdata:/home/amp/.ampdata
+    environment:
+      - "UID=120" # Change according to which user on the host will own the ampdata volume.
+      - "GID=124"
+      - "TZ=Etc/UTC" # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      - "LICENCE=#########-####-#####-##########"
+      - "MODULE=Factorio"
+    restart: unless-stopped
