@@ -13,6 +13,11 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+export AMP_SUPPORT_LEVEL=UNSUPPORTED
+export AMP_SUPPORT_TOKEN=AST0/MTAD
+export AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
+export AMP_SUPPORT_URL="https://github.com/MitchTalmadge/AMP-dockerized/"
+
 # Copy the pre-cached AMP Core from the image into the location AMP expects.
 # This will allow upgrades to use the cache and not need to do any downloads.
 echo "Copying AMP Core..."
