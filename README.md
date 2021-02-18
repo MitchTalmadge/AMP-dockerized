@@ -24,6 +24,7 @@ If you are using Unraid, please check out [this support topic](https://forums.un
 
 **Tested and Working:**
 
+- Factorio
 - McMyAdmin
 - Minecraft Java Edition
 - Minecraft Bedrock Edition
