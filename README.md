@@ -186,4 +186,4 @@ To upgrade, all you have to do is pull our latest Docker image! We automatically
 
 # Contributing
 
-I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!!
+I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!! 
