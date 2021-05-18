@@ -2,7 +2,7 @@
 [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
-(`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease!
+(`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
 In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP#buyAMP) to use this image.
 
