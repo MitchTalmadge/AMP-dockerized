@@ -28,8 +28,8 @@ jobs:
       #     tags: amp-dockerized:latest
       - 
         name: Tag Staging
-        if: ${{ startsWith(steps.extract_branch.branch, 'staging') }}
-        run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.extract_branch.branch}}
+        if: ${{ startsWith(steps.extract_branch.outputs.branch, 'staging') }}
+        run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.extract_branch.outputs.branch}}
       - 
         name: Push to Docker Hub
         run: docker image push --all-tags mitchtalmadge/amp-dockerized
