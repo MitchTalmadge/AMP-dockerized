@@ -1,6 +1,6 @@
 name: Build and Deploy
 
-on: [push, pull_request]
+on: [create, push, pull_request, workflow_dispatch]
 
 jobs:
   build:
@@ -26,9 +26,12 @@ jobs:
           context: .
           tags: amp-dockerized:latest
       - 
-        name: Tag Latest
+        name: Tag Versions
         if: ${{ startsWith(steps.extract_tag.outputs.tag, 'v') }}
-        run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest
+        run: |
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.extract_tag.outputs.tag}}
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:`echo ${{steps.extract_tag.outputs.tag}} | sed -nE 's/^(v[0-9]+)-.+$/\1/p'`
       - 
         name: Tag Staging
         if: ${{ startsWith(steps.extract_branch.outputs.branch, 'staging') }}
