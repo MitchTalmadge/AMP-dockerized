@@ -2,19 +2,26 @@ FROM ubuntu:20.04
 
 ENV UID=1000
 ENV GID=1000
+ENV TZ=Etc/UTC
 ENV PORT=8080
 ENV USERNAME=admin
 ENV PASSWORD=password
 ENV LICENCE=notset
 ENV MODULE=ADS
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
+ENV AMP_SUPPORT_TOKEN=AST0/MTAD
+ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
+ENV AMP_SUPPORT_URL="https://github.com/MitchTalmadge/AMP-dockerized/"
 
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Initialize
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     jq \
+    sed \
+    tzdata \
     wget && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -73,15 +80,25 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
     cert-sync /tmp/cacert.pem
 
 
-# Install dependencies for various game servers.
+# Install AMP dependencies
 RUN ls -al /usr/local/bin/
 RUN dpkg --add-architecture i386 && \
     apt-get update && \
     apt-get install -y \
-    # Dependencies for Minecraft
+    # --------------------
+    # Dependencies for AMP:
+    tmux \
+    git \
+    socat \
+    unzip \
+    iputils-ping \
+    procps \
+    # --------------------
+    # Dependencies for Minecraft:
     openjdk-11-jre-headless \
-    # ----
-    # Dependencies for srcds (TF2, GMod, etc.)
+    openjdk-8-jre-headless \
+    # --------------------
+    # Dependencies for srcds (TF2, GMod, ...)
     lib32gcc1 \
     lib32stdc++6 \
     lib32z1 \
@@ -91,27 +108,53 @@ RUN dpkg --add-architecture i386 && \
     libncurses5:i386 \
     libsdl2-2.0-0:i386 \ 
     libtinfo5:i386 \
-    # ----
-    # Dependencies for Factorio
-    xz-utils && \
-    # ----
+    # --------------------
+    # Dependencies for Factorio:
+    xz-utils \
+    # --------------------
+    && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
+    
+# Install Java 17 for Minecraft 1.17+ (Using hirsute)
+RUN echo "deb http://archive.ubuntu.com/ubuntu/ hirsute main universe" > /etc/apt/sources.list.d/hirsute.list && \
+    apt-get update && \
+    apt-get install -y \
+    openjdk-17-jre-headless \
+    && \
+    apt-get -y clean && \
+    apt-get -y autoremove --purge && \
+    rm -rf \
+    /tmp/* \
+    /var/lib/apt/lists/* \
+    /var/tmp/* \
+    /etc/apt/sources.list.d/hirsute.list
 
+# Set Java 11 to default
+RUN update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
 
-# Manually install AMP (Docker doesn't have systemctl and other things that AMP's deb postinst expects).
+# Manually install ampinstmgr by extracting it from the deb package.
+# Docker doesn't have systemctl and other things that AMP's deb postinst expects,
+# so we can't use apt to install ampinstmgr.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    tmux \
-    git \
-    socat \
-    unzip \
-    iputils-ping \
-    procps && \
+    software-properties-common \
+    dirmngr \
+    apt-transport-https && \
+    # Add CubeCoders repository and key
+    apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+    apt-add-repository "deb http://repo.cubecoders.com/ debian/" && \
+    apt-get update && \
+    # Just download (don't actually install) ampinstmgr
+    apt-get install -y --no-install-recommends --download-only ampinstmgr && \
+    # Extract ampinstmgr from downloaded package
+    mkdir -p /tmp/ampinstmgr && \
+    dpkg-deb -x /var/cache/apt/archives/ampinstmgr_*.deb /tmp/ampinstmgr && \
+    mv /tmp/ampinstmgr/opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -119,12 +162,9 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-
-# Create ampinstmgr install directory.
-# ampinstmgr will be downloaded later when the image is started for the first time.
-RUN mkdir -p /home/amp/.ampdata/.bin && \
-    ln -s /home/amp/.ampdata/.bin/ampinstmgr /usr/local/bin/ampinstmgr
-
+# Get the latest AMP Core to pre-cache upgrades.
+RUN wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
+    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip
 
 # Set up environment
 COPY entrypoint /opt/entrypoint

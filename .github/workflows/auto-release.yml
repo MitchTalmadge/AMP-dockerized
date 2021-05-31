@@ -1,0 +1,34 @@
+name: Auto Release
+
+on:
+  workflow_dispatch: 
+  schedule:
+    - cron: "0 * * * *" # Every hour
+  release:
+    types: [released] 
+
+jobs:
+  check-for-updates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: master
+          fetch-depth: 0 
+
+      - name: Download AMP Versions
+        run: wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json
+
+      - name: Parse Versions
+        run: |
+          echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-committerdate | grep -E '^v?[0-9]+$' -m 1)" >> $GITHUB_ENV
+          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+
+      - name: Create Tag
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag -a "$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION" -m "Auto Release Latest AMP Version" || { echo "Already up-to-date"; exit; }
+          git push --follow-tags

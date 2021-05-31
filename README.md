@@ -1,18 +1,30 @@
 # AMP-dockerized
 [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 
-This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized) 
-(`mitchtalmadge/amp-dockerized:latest`)
+This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
+(`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease!
 
-In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI.
+In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP#buyAMP) to use this image.
 
-*Disclaimer:* I (Mitch Talmadge) did not create AMP and am not associated with CubeCoders. I simply made it work with Docker because
- I hate installing things.
+Updates to AMP are automatically bundled into new Docker images. We check for updates hourly.
+
+*Please note:* This is a community-made unofficial image, and is not endorsed by CubeCoders.
+
+# Getting Help
+
+**Please DO NOT bug CubeCoders for support without first asking here; they do not support nor endorse this image and will tell you that you are on your own.**
+
+If you need help with AMP when using this image, please [create an issue](https://github.com/MitchTalmadge/AMP-dockerized/issues/new) and we will figure it out! 
+
+## Unraid
+If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
+
  
 # Supported Modules
 
 **Tested and Working:**
 
+- Factorio
 - McMyAdmin
 - Minecraft Java Edition
 - Minecraft Bedrock Edition
@@ -133,6 +145,13 @@ Here are the accepted values for the `MODULE` variable:
 
 When not specified, these both default to ID `1000`; i.e. the first non-system user on the host.
 
+### Timezone
+| Name | Description                                                          | Default Value |
+|------|----------------------------------------------------------------------|---------------|
+| `TZ` | The timezone to use in the container. Pick from the "TZ database name" column on [this page](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)   | `Etc/UTC`        |
+
+Example: `TZ=America/Denver`
+
 ### Web UI
 
 | Name       | Description                                                                                                                                             | Default Value |
@@ -163,15 +182,8 @@ Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in 
 
 # Upgrading AMP
 
-AMP is automatically upgraded to the latest version when the container is restarted. If a newer version of AMP exists
-than the one that is running, it will be downloaded and installed before the instances are started. :D Yay
+To upgrade, all you have to do is pull our latest Docker image! We automatically check for AMP updates every hour. When a new version is released, we build and publish an image both as a standalone tag and on `:latest`. 
 
-# Support and Contributing
+# Contributing
 
-I am a full time college student and have very little time. Still, if you need help, post an issue in the repo and 
-work as a community to help each other out. I welcome pull requests if you discuss the changes in an issue first.
-
-## Unraid
-If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
-
-Thank you for your help! Enjoy :)
+I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!!

@@ -1,6 +1,24 @@
 #!/bin/bash -e
 set +o xtrace
 
+echo "----------------------"
+echo "Starting AMP-Dockerized..."
+echo "----------------------"
+echo "Note: This is an UNOFFICIAL IMAGE for CubeCoders AMP. This was created by the community, NOT CubeCoders."
+echo "Please, DO NOT contact CubeCoders (Discord or otherwise) for technical support when using this image."
+echo "They do not support nor endorse this image and will not help you."
+echo "Instead, please direct support requests to https://github.com/MitchTalmadge/AMP-dockerized/issues."
+echo "We are happy to help you there!"
+echo "Thank you!!"
+echo "----------------------"
+echo ""
+
+# Copy the pre-cached AMP Core from the image into the location AMP expects.
+# This will allow upgrades to use the cache and not need to do any downloads.
+echo "Copying AMP Core..."
+mkdir -p /home/amp/.ampdata/instances/
+cp /opt/AMPCache* /home/amp/.ampdata/instances/
+
 # Create user and group that will own the config files (if they don't exist already).
 echo "Ensuring AMP user exists..."
 if [ ! "$(getent group ${GID})" ]; then
@@ -22,18 +40,20 @@ if [ ! "$(getent passwd ${UID})" ]; then
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 
+# Let all volume data be owned by the new user.
 echo "Ensuring correct file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
+
+# Set Timezone
+echo "Setting timezone from TZ env var..."
+ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
+dpkg-reconfigure --frontend noninteractive tzdata
 
 # Ensure a Licence was set
 if [ ${LICENCE} = "notset" ]; then
   echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
   exit 1
 fi
-
-# Update the instance manager.
-echo "Checking for ampinstmgr updates..."
-/bin/bash /opt/entrypoint/update-ampinstmgr.sh
 
 # Create Main Instance if not exists
 echo "Making sure Main instance exists..."
@@ -60,7 +80,7 @@ else
 fi
 
 # Upgrade instances
-echo "Upgrading Instances... (This can take a while)"
+echo "Upgrading Instances..."
 su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 
 # Set Main instance to start on boot if not already.
@@ -80,6 +100,11 @@ shutdown() {
   exit 0
 }
 trap "shutdown" SIGTERM
+
+# Java 11 Notice
+echo "----------------------"
+echo "NOTICE: Java 17 is now included in this image, but Java 11 is still the default. Use the Java Configuration section in the AMP Web UI to select a specific version. Otherwise, Java 11 will be used automatically."
+echo "----------------------"
 
 # Sleep
 echo "Entrypoint Sleeping. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
