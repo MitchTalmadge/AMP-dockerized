@@ -6,6 +6,10 @@ on:
       - "v[0-9]+-.+"
   push:
   pull_request:
+  release:
+    types: [released] 
+  schedule:
+    - cron: "0 * * * *" # Every hour
   workflow_dispatch:
 
 jobs:
@@ -23,6 +27,27 @@ jobs:
         if: ${{ startsWith(github.ref, 'refs/heads/') }}
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+      - 
+        name: Download AMP Versions
+        if: ${{ github.event_name == 'release' || github.event_name == 'schedule' }}
+        run: wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json
+      - 
+        name: Parse Versions
+        if: ${{ github.event_name == 'release' || github.event_name == 'schedule' }}
+        run: |
+          echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)" >> $GITHUB_ENV
+          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+      - 
+        name: Create Tag
+        if: ${{ github.event_name == 'release' || github.event_name == 'schedule' }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          NEW_DEPLOY_TAG=$LATEST_RELEASE_VERSION-ampcore$AMP_CORE_VERSION-ampinstmgr$AMP_INST_MGR_VERSION
+          git tag -a "$NEW_DEPLOY_TAG" -m "Auto Release Latest AMP Version" || { echo "Already up-to-date"; exit; }
+          git push --follow-tags
+          echo "DEPLOY_TAG=$NEW_DEPLOY_TAG" >> $GITHUB_ENV
       - 
         name: Extract Tag Name
         id: extract_tag
@@ -47,18 +72,18 @@ jobs:
           context: .
           tags: amp-dockerized:latest
       - 
-        name: Tag Versions
+        name: Tag Docker for Production
         if: ${{ steps.is_tagged.outputs.value == 'true' }}
         run: |
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:$DEPLOY_TAG
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:`echo $DEPLOY_TAG | sed -nE 's/^(v[0-9]+)-.+$/\1/p'`
       - 
-        name: Tag Staging
+        name: Tag Docker for Staging
         if: ${{ startsWith(steps.extract_branch.outputs.branch, 'staging') }}
         run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.extract_branch.outputs.branch}}
       - 
-        name: Count Tags
+        name: Count Docker Tags
         id: count_tags
         run: echo "##[set-output name=tag_count;]$(echo `docker image ls mitchtalmadge/amp-dockerized -q | wc -l`)"
       -
