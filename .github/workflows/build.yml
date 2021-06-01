@@ -33,6 +33,11 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: echo "DEPLOY_TAG=$(git tag -l --sort=-committerdate | grep -E '^v[0-9]+-.+$' -m 1)" >> $GITHUB_ENV
+      - 
+        name: Is Tagged
+        id: is_tagged
+        shell: bash
+        run: echo "##[set-output name=value;]$(echo $([ DEPLOY_TAG ] && echo true || echo false))"
       -
         name: Build
         uses: docker/build-push-action@v2
@@ -41,7 +46,7 @@ jobs:
           tags: amp-dockerized:latest
       - 
         name: Tag Versions
-        if: ${{ $DEPLOY_TAG != '' }}
+        if: ${{ steps.is_tagged.outputs.value == 'true' }}
         run: |
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:$DEPLOY_TAG
