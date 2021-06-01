@@ -1,6 +1,12 @@
 name: Build and Deploy
 
-on: [create, push, pull_request, workflow_dispatch]
+on: 
+  create:
+    tags:
+      - "v[0-9]+-.+"
+  push:
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,13 +18,26 @@ jobs:
       - 
         name: Extract Branch Name
         id: extract_branch
+        if: ${{ startsWith(github.ref, 'refs/heads/') }}
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       - 
         name: Extract Tag Name
         id: extract_tag
+        if: ${{ startsWith(github.ref, 'refs/tags/') }}
         shell: bash
-        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"
+        run: echo "DEPLOY_TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+      - 
+        name: Get Latest Tag
+        id: latest_tag
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        shell: bash
+        run: echo "DEPLOY_TAG=$(git tag -l --sort=-committerdate | grep -E '^v[0-9]+-.+$' -m 1)" >> $GITHUB_ENV
+      - 
+        name: Is Tagged
+        id: is_tagged
+        shell: bash
+        run: echo "##[set-output name=value;]$(echo $([ $DEPLOY_TAG ] && echo true || echo false))"
       -
         name: Build
         uses: docker/build-push-action@v2
@@ -27,11 +46,11 @@ jobs:
           tags: amp-dockerized:latest
       - 
         name: Tag Versions
-        if: ${{ startsWith(steps.extract_tag.outputs.tag, 'v') }}
+        if: ${{ steps.is_tagged.outputs.value == 'true' }}
         run: |
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.extract_tag.outputs.tag}}
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:`echo ${{steps.extract_tag.outputs.tag}} | sed -nE 's/^(v[0-9]+)-.+$/\1/p'`
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:$DEPLOY_TAG
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:`echo $DEPLOY_TAG | sed -nE 's/^(v[0-9]+)-.+$/\1/p'`
       - 
         name: Tag Staging
         if: ${{ startsWith(steps.extract_branch.outputs.branch, 'staging') }}
