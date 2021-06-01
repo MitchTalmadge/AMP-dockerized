@@ -103,7 +103,7 @@ trap "shutdown" SIGTERM
 
 # Java 11 Notice
 echo "----------------------"
-echo "NOTICE: Java 17 is now included in this image, but Java 11 is still the default. Use the Java Configuration section in the AMP Web UI to select a specific version. Otherwise, Java 11 will be used automatically."
+echo "NOTICE: Java 16 is now included in this image, but Java 11 is still the default. Use the Java Configuration section in the AMP Web UI to select a specific version. Otherwise, Java 11 will be used automatically."
 echo "----------------------"
 
 # Sleep

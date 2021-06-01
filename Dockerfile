@@ -114,11 +114,11 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
     
-# Install Java 17 for Minecraft 1.17+ (Using hirsute)
+# Install Java 16 for Minecraft 1.17+ (Using hirsute)
 RUN echo "deb http://archive.ubuntu.com/ubuntu/ hirsute main universe" > /etc/apt/sources.list.d/hirsute.list && \
     apt-get update && \
     apt-get install -y \
-    openjdk-17-jre-headless \
+    openjdk-16-jre-headless \
     && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
