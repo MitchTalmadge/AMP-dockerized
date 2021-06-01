@@ -34,7 +34,7 @@ jobs:
         id: latest_tag
         if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
-        run: echo "DEPLOY_TAG=$(git tag -l --sort=-committerdate | grep -E '^v[0-9]+-.+$' -m 1)" >> $GITHUB_ENV
+        run: echo "DEPLOY_TAG=$(git tag -l --sort=-creatordate | grep -E '^v[0-9]+-.+$' -m 1)" >> $GITHUB_ENV
       - 
         name: Is Tagged
         id: is_tagged
