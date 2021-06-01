@@ -30,7 +30,7 @@ jobs:
       - 
         name: Get Latest Tag
         id: latest_tag
-        if: ${{ github.event_name == "workflow_dispatch" }}
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         shell: bash
         run: echo "DEPLOY_TAG=$(git tag -l --sort=-committerdate | grep -E '^v[0-9]+-.+$' -m 1)" >> $GITHUB_ENV
       -
