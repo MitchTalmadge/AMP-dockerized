@@ -1,6 +1,4 @@
 # AMP-dockerized
-[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
-
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
