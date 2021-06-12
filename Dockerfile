@@ -102,6 +102,8 @@ RUN apt-get update && \
     lib32gcc1 \
     lib32stdc++6 \
     lib32tinfo5 \
+    # For libsdl2-2.0-0 see: https://github.com/ValveSoftware/steam-for-linux/issues/7036
+    libsdl2-2.0-0 \
     # --------------------
     # Dependencies for Factorio:
     xz-utils \
@@ -113,7 +115,7 @@ RUN apt-get update && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-    
+
 # Install Java 16 for Minecraft 1.17+ (Using hirsute)
 RUN echo "deb http://archive.ubuntu.com/ubuntu/ hirsute main universe" > /etc/apt/sources.list.d/hirsute.list && \
     apt-get update && \
