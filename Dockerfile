@@ -95,6 +95,7 @@ RUN dpkg --add-architecture i386 && \
     procps \
     # --------------------
     # Dependencies for Minecraft:
+    openjdk-16-jre-headless \
     openjdk-11-jre-headless \
     openjdk-8-jre-headless \
     # --------------------
@@ -119,20 +120,6 @@ RUN dpkg --add-architecture i386 && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-    
-# Install Java 17 for Minecraft 1.17+ (Using hirsute)
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ hirsute main universe" > /etc/apt/sources.list.d/hirsute.list && \
-    apt-get update && \
-    apt-get install -y \
-    openjdk-17-jre-headless \
-    && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/* \
-    /etc/apt/sources.list.d/hirsute.list
 
 # Set Java 11 to default
 RUN update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
