@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 ENV UID=1000
 ENV GID=1000
@@ -82,7 +82,8 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
 
 # Install AMP dependencies
 RUN ls -al /usr/local/bin/
-RUN apt-get update && \
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
     apt-get install -y \
     # --------------------
     # Dependencies for AMP:
@@ -94,16 +95,20 @@ RUN apt-get update && \
     procps \
     # --------------------
     # Dependencies for Minecraft:
+    openjdk-16-jre-headless \
     openjdk-11-jre-headless \
     openjdk-8-jre-headless \
     # --------------------
     # Dependencies for srcds (TF2, GMod, ...)
-    libcurl4 \
     lib32gcc1 \
     lib32stdc++6 \
-    lib32tinfo5 \
-    # For libsdl2-2.0-0 see: https://github.com/ValveSoftware/steam-for-linux/issues/7036
-    libsdl2-2.0-0 \
+    lib32z1 \
+    libbz2-1.0:i386 \
+    libcurl3-gnutls:i386 \
+    libcurl4 \
+    libncurses5:i386 \
+    libsdl2-2.0-0:i386 \ 
+    libtinfo5:i386 \
     # --------------------
     # Dependencies for Factorio:
     xz-utils \
@@ -115,20 +120,6 @@ RUN apt-get update && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-
-# Install Java 16 for Minecraft 1.17+ (Using hirsute)
-RUN echo "deb http://archive.ubuntu.com/ubuntu/ hirsute main universe" > /etc/apt/sources.list.d/hirsute.list && \
-    apt-get update && \
-    apt-get install -y \
-    openjdk-16-jre-headless \
-    && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/* \
-    /etc/apt/sources.list.d/hirsute.list
 
 # Set Java 11 to default
 RUN update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
