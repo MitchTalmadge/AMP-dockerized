@@ -28,6 +28,7 @@ If you are using Unraid, please check out [this support topic](https://forums.un
 - Minecraft Bedrock Edition
 - srcds (GMod, TF2, ...)
 - StarBound
+- Valheim
  
 **Untested:**
  
@@ -80,7 +81,7 @@ Here's a rough (and potentially incorrect) list of default ports for the various
 | `ARK`       | UDP 27015 & UDP 7777 & UDP 7778 ([Guide](https://ark.gamepedia.com/Dedicated_Server_Setup))                                                                                                    |
 | `Arma3`     | UDP 2302 to UDP 2306 ([Guide](https://community.bistudio.com/wiki/Arma_3_Dedicated_Server))                                                                                                    |
 | `Factorio`  | UDP 34197 ([Guide](https://wiki.factorio.com/Multiplayer))                                                                                                                                     |
-| `FiveM`     | UDP 30120 & TCP 30120 ([Guide](https://docs.fivem.net/docs/server-manual/setting-up-a-server/))                                                                                                 |
+| `FiveM`     | UDP 30120 & TCP 30120 ([Guide](https://docs.fivem.net/docs/server-manual/setting-up-a-server/))                                                                                                |
 | `Generic`   | Completely depends on what you do with it.                                                                                                                                                     |
 | `JC2MP`     | UDP 27015 & UDP 7777 & UDP 7778 (Unconfirmed!)                                                                                                                                                 |
 | `McMyAdmin` | TCP 25565                                                                                                                                                                                      |
@@ -89,6 +90,7 @@ Here's a rough (and potentially incorrect) list of default ports for the various
 | `SevenDays` | UDP 26900 to UDP 26902 & TCP 26900 ([Guide](https://developer.valvesoftware.com/wiki/7_Days_to_Die_Dedicated_Server))                                                                          |
 | `srcds`     | Depends on the game. Usually UDP 27015. ([List of games under srcds](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility#applications-running-under-the-srcds-module)) |
 | `StarBound` | TCP 21025 ([Guide](https://starbounder.org/Guide:Setting_Up_Multiplayer))                                                                                                                      |
+| `Valheim`   | UDP 5678 → 5680                                                                                                                                                                                |
 
 Just a quick note about ports: some games use TCP, some games use UDP. Make sure you are using the right protocol. Don't fall into the trap of accidentally mapping a TCP port for a UDP game -- you won't be able to connect. 
 
