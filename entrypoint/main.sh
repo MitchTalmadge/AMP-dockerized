@@ -13,6 +13,12 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+# Run user startup scripts
+if [ ! -z "$STARTUP_SCRIPT" ]; then
+  echo "Running startup script..."
+  /bin/bash /scripts/$STARTUP_SCRIPT
+fi
+
 # Copy the pre-cached AMP Core from the image into the location AMP expects.
 # This will allow upgrades to use the cache and not need to do any downloads.
 echo "Copying AMP Core..."
