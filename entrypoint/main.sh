@@ -16,7 +16,12 @@ echo ""
 # Run user startup scripts
 if [ ! -z "$STARTUP_SCRIPT" ]; then
   echo "Running startup script..."
-  /bin/bash /scripts/$STARTUP_SCRIPT
+  if [ -f "/scripts/$STARTUP_SCRIPT" ]; then
+    chmod +x /scripts/$STARTUP_SCRIPT
+    /bin/bash /scripts/$STARTUP_SCRIPT
+  else
+    echo "ERROR: Startup script not found!"
+  fi
 fi
 
 # Copy the pre-cached AMP Core from the image into the location AMP expects.
