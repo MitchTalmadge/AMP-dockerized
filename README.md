@@ -1,6 +1,4 @@
 # AMP-dockerized
-[![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/mitchtalmadge/amp-dockerized)](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
-
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease!
 
@@ -165,12 +163,27 @@ Example: `TZ=America/Denver`
 |-------|----------------------------------------------------------------------|---------------|
 | `NIGHTLY` | Set to any value to enable nightly builds. All instances will be migrated to nightly builds on next image start. Unset this variable to go back to MainLine builds (stable releases).    | UNSET        |
 
-
 ## Volumes
 
-| Mount Point           | Description                                                                                                                                                                                                        |
-|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/home/amp/.ampdata`  | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot.|
+| Mount Point          | Description                                                                                                                                                                                                                       |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `/home/amp/.ampdata` | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game files, the web ui sign-in info, etc. Essentially, without creating this volume, AMP will be wiped on every boot. |
+| `/home/amp/scripts`  | This volume allows you to provide custom scripts that will run at certain points during this container's lifecycle. See the section below about custom scripts.                                                                   |
+
+### Custom Scripts
+
+If you would like to run your own shell scripts in this container, which can be useful to e.g. install extra dependencies for a game's plugin, you can use the `/home/amp/scripts` volume.
+
+Currently, only one script is supported: `startup.sh`. Place a file named `startup.sh` into the volume, and it will be run on container startup.
+
+**Example: Installing extra packages**
+```sh
+echo "Downloading dependencies for Valheim Plus Mod..."
+apt-get update && \
+apt-get install -y \
+        libc6 \
+        libc6-dev
+```
 
 ## HTTPS / SSL / TLS
 
