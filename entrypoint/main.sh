@@ -81,7 +81,7 @@ fi
 
 # Upgrade instances
 echo "Upgrading Instances..."
-su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
+su ${APP_USER} --command "ampinstmgr --nocache UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 
 # Set Main instance to start on boot if not already.
 echo "Ensuring Main Instance will Start on Boot..."
