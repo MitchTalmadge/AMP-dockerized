@@ -7,9 +7,12 @@ on:
   pull_request:
 
 jobs:
-  build_amd64:
-    name: "Build AMD64"
+  build:
+    name: "Build"
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -23,38 +26,12 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64
+          platforms: linux/${{ matrix.arch }}
           tags: amp-dockerized:latest
-          outputs: type=docker,dest=/tmp/amp-dockerized-amd64.tar
-      - name: "Upload Docker Image Artifacts"
+          outputs: type=docker,dest=/tmp/amp-dockerized-${{ matrix.arch }}.tar
+      - name: "Upload Docker Image Artifact"
         if: ${{ github.event_name == 'workflow_call' }}
         uses: actions/upload-artifact@v2
         with:
-          name: image-amd64
-          path: /tmp/amp-dockerized-amd64.tar
-
-  build_arm64:
-    name: "Build ARM64"
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Checkout"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: "Set up QEMU"
-        uses: docker/setup-qemu-action@v1
-      - name: "Set up Docker Buildx"
-        uses: docker/setup-buildx-action@v1
-      - name: "Build Docker Image"
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          platforms: linux/arm64
-          tags: amp-dockerized:latest
-          outputs: type=docker,dest=/tmp/amp-dockerized-arm64.tar
-      - name: "Upload Docker Image Artifacts"
-        if: ${{ github.event_name == 'workflow_call' }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: image-arm64
-          path: /tmp/amp-dockerized-arm64.tar
+          name: image-${{ matrix.arch }}
+          path: /tmp/amp-dockerized-${{ matrix.arch }}.tar
