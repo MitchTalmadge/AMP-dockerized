@@ -42,6 +42,11 @@ jobs:
     needs: [get_latest_version, get_last_modified]
     outputs:
       tag_exists: ${{ steps.check_for_tag.outputs.tag_exists }}
+      git_release_version: ${{ steps.get_git_version.outputs.git_latest_release_version }}
+      amp_core_version: ${{ needs.get_latest_version.outputs.amp_core_version }}
+      amp_instmgr_version: ${{ needs.get_latest_version.outputs.amp_instmgr_version }}
+      amp_last_modified: ${{ needs.get_last_modified.outputs.amp_last_modified }}
+
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -51,17 +56,17 @@ jobs:
         id: get_git_version
         run: echo "::set-output name=git_latest_release_version::$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)"
       - name: "Compose Expected Tag"
-        id: compose_expected_tag
+        id: compose_tag
         run: echo "::set-output name=expected_tag::${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}"
-      - name: "Check for Tag"
+      - name: "Check for Expected Tag"
         id: check_for_tag
-        run: echo "::set-output name=tag_exists::$(git tag | grep -q ${{steps.compose_expected_tag.outputs.expected_tag}} && 1 || 0)"
+        run: echo "::set-output name=tag_exists::$(git tag | grep -q ${{steps.compose_tag.outputs.expected_tag}} && 1 || 0)"
 
   deploy_updates:
     name: "Deploy Updates"
     runs-on: ubuntu-latest
     needs: [check_for_tag]
-    if: ${{ steps.check_for_tag.outputs.tag_exists == 0 && github.ref == 'refs/heads/master' }}
+    if: ${{ needs.check_for_tag.outputs.tag_exists == 0 && github.ref == 'refs/heads/master' }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
@@ -75,14 +80,14 @@ jobs:
       - name: "Tag Docker Images"
         run: |
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.get_git_version.outputs.git_latest_release_version}} 
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{needs.check_for_tag.outputs.git_release_version}} 
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{needs.check_for_tag.outputs.git_release_version}}-ampcore${{needs.check_for_tag.outputs.amp_core_version}}-ampinstmgr${{needs.check_for_tag.outputs.amp_instmgr_version}}
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{needs.check_for_tag.outputs.git_release_version}}-ampcore${{needs.check_for_tag.outputs.amp_core_version}}-ampinstmgr${{needs.check_for_tag.outputs.amp_instmgr_version}}-${{needs.check_for_tag.outputs.amp_last_modified}}
       - name: "Commit Git Tag"
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          TAG=${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}
+          TAG=${{needs.check_for_tag.outputs.git_release_version}}-ampcore${{needs.check_for_tag.outputs.amp_core_version}}-ampinstmgr${{needs.check_for_tag.outputs.amp_instmgr_version}}-${{needs.check_for_tag.outputs.amp_last_modified}}
           git tag -a "${TAG}" -m "Auto Release Latest AMP Version" || { echo "Tag already exists"; exit; }
           git push --follow-tags
       - name: "Login to Docker Hub"
