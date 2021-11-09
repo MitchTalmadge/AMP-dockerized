@@ -107,6 +107,7 @@ RUN dpkg --add-architecture i386 && \
     libcurl3-gnutls:i386 \
     libcurl4 \
     libncurses5:i386 \
+    libsdl2-2.0-0 \
     libsdl2-2.0-0:i386 \ 
     libtinfo5:i386 \
     # --------------------

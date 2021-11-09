@@ -1,0 +1,21 @@
+on:
+  schedule:
+    - cron: "0 * * * *" # Hourly
+
+jobs:
+  get_latest_version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Download AMP Versions"
+        run: wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json
+      - name: "Parse Versions"
+        run: |
+          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+
+  get_latest_filesize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Get Latest Filesize"
+        run: echo "AMP_FILESIZE=$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | grep "content-length" | awk '{print $2}')" >> $GITHUB_ENV
+
