@@ -1,3 +1,5 @@
+name: "Check for Updates"
+
 on:
   schedule:
     - cron: "0 * * * *" # Hourly
