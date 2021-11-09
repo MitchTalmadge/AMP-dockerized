@@ -1,0 +1,13 @@
+name: "Auto Deploy Staging Branches"
+
+on:
+  push:
+
+jobs:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@master
+
+  deploy:
+    needs: [build]
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy-staging.yml@master

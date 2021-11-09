@@ -71,7 +71,7 @@ jobs:
   deploy:
     name: "Deploy"
     needs: [ build, check_for_tag ]
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy.yml@master
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy-prod.yml@master
     with:
       git_release_version: ${{ needs.check_for_tag.outputs.git_release_version }}
       amp_core_version: ${{ needs.check_for_tag.outputs.amp_core_version }}

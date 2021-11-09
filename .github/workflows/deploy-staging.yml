@@ -1,0 +1,32 @@
+name: "Deploy Staging"
+
+on:
+  workflow_call:
+
+jobs:
+  deploy:
+    name: "Deploy Staging"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Download Docker Image Artifacts"
+        uses: actions/download-artifact@v2
+        with:
+          path: /tmp
+      - name: "Load Docker Images"
+        run: |
+          for f in /tmp/amp-dockerized*.tar; do
+            docker load --input ${f}
+          done
+          docker image ls -a
+      - name: "Extract Branch Name"
+        id: extract_branch
+        run: echo "::set-output name=name::$(echo ${GITHUB_REF#refs/heads/})"
+      - name: "Tag Docker Image"
+        run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{ steps.extract_branch.outputs.name }}
+      - name: "Login to Docker Hub"
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: "Deploy to Docker Hub"
+        run: docker image push --all-tags mitchtalmadge/amp-dockerized
