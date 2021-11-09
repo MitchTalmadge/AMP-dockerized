@@ -7,6 +7,7 @@ on:
 
 jobs:
   get_latest_version:
+    name: "Get Latest Version"
     runs-on: ubuntu-latest
     steps:
       - name: "Download AMP Versions"
@@ -17,6 +18,7 @@ jobs:
           echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
 
   get_latest_filesize:
+    name: "Get Latest Filesize"
     runs-on: ubuntu-latest
     steps:
       - name: "Get Latest Filesize"
