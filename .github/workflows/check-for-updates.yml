@@ -22,5 +22,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: "Get Latest Filesize"
-        run: echo "AMP_FILESIZE=$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | grep "content-length" | awk '{print $2}')" >> $GITHUB_ENV
-
+        run: echo "AMP_FILESIZE=$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | awk '$1 == "content-length:" {print $2}' | sed -e '/^$/d')" >> $GITHUB_ENV
