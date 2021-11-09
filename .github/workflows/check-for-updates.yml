@@ -60,13 +60,13 @@ jobs:
         run: echo "::set-output name=expected_tag::${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}"
       - name: "Check for Expected Tag"
         id: check_for_tag
-        run: echo "::set-output name=tag_exists::$(git tag | grep -q ${{steps.compose_tag.outputs.expected_tag}} && 1 || 0)"
+        run: echo "::set-output name=tag_exists::$(git tag | grep -q ${{steps.compose_tag.outputs.expected_tag}} && echo '1' || echo '0')"
 
   deploy_updates:
     name: "Deploy Updates"
     runs-on: ubuntu-latest
     needs: [check_for_tag]
-    if: ${{ needs.check_for_tag.outputs.tag_exists == 0 && github.ref == 'refs/heads/master' }}
+    if: ${{ needs.check_for_tag.outputs.tag_exists == '0' && github.ref == 'refs/heads/master' }}
     steps:
       - name: "Checkout"
         uses: actions/checkout@v2
