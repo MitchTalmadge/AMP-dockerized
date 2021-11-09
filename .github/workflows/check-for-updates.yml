@@ -2,7 +2,7 @@ name: "Check for Updates"
 
 on:
   schedule:
-    - cron: "0 * * * *" # Hourly
+    - cron: "*/5 * * * *" # Every 5 mins
   workflow_dispatch:
 
 jobs:
