@@ -63,7 +63,7 @@ RUN apt-get update && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    echo "deb https://download.mono-project.com/repo/debian stable-stretch main" | tee /etc/apt/sources.list.d/mono-official-stable.list
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list
 
 
 # Install Mono Certificates
@@ -108,7 +108,7 @@ RUN dpkg --add-architecture i386 && \
     libcurl4 \
     libncurses5:i386 \
     libsdl2-2.0-0 \
-    libsdl2-2.0-0:i386 \ 
+    libsdl2-2.0-0:i386 \
     libtinfo5:i386 \
     # --------------------
     # Dependencies for Factorio:
