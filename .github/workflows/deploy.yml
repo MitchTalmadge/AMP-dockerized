@@ -25,12 +25,11 @@ jobs:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v2
         with:
-          name: images
           path: /tmp
       - name: "Load Docker Image"
         run: |
-          docker load --input /tmp/images/amp-dockerized-amd64.tar
-          docker load --input /tmp/images/amp-dockerized-arm64.tar
+          docker load --input /tmp/amp-dockerized-amd64.tar
+          docker load --input /tmp/amp-dockerized-arm64.tar
           docker image ls -a
       - name: "Tag Docker Images"
         run: |
