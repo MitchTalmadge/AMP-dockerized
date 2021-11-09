@@ -10,23 +10,30 @@ jobs:
   get_latest_version:
     name: "Get Latest Version"
     runs-on: ubuntu-latest
+    outputs:
+      amp_core_version: ${{ steps.parse.outputs.amp_core_version }}
+      amp_instmgr_version: ${{ steps.parse.outputs.amp_instmgr_version }}
     steps:
       - name: "Download AMP Versions"
         run: wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json
       - name: "Parse Versions"
+        id: parse
         run: |
-          echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
-          echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
+          echo "::set-output name=amp_core_version::$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')"
+          echo "::set-output name=amp_instmgr_version::$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')"
 
   # Find out when the latest version of AMP was modified.
   # Sometimes patches are released under the same version, so only this value will change.
   get_last_modified:
     name: "Get Last Modified"
     runs-on: ubuntu-latest
+    outputs:
+      amp_last_modified: ${{ steps.parse.outputs.amp_last_modified }}
     steps:
       - name: "Get Last Modified"
+        id: parse
         # Converts the last-modified header to seconds since epoch.
-        run: echo "AMP_MODIFIED=$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | awk 'match($0, /last-modified:\s+(.+)\s+/, a) {print a[1]}' | date -f - +%s)" >> $GITHUB_ENV
+        run: echo "::set-output name=amp_last_modified::$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | awk 'match($0, /last-modified:\s+(.+)\s+/, a) {print a[1]}' | date -f - +%s)"
 
   # Determine if we have a tag for this combination of version and last-modified.
   check_for_tag:
@@ -35,6 +42,7 @@ jobs:
     needs: [get_latest_version, get_last_modified]
     steps:
       - name: "Determine Latest Release Version"
-        run: echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)" >> $GITHUB_ENV
-      - name: "Debug"
-        run: echo $GITHUB_ENV
+        id: get_git_version
+        run: echo "::set-output name=git_latest_release_version::$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)"
+      - name: "Compose Tag"
+        run: echo ${{steps.get_git_version.outputs.git_latest_release_version}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}
