@@ -41,6 +41,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [get_latest_version, get_last_modified]
     steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: "Determine Latest Release Version"
         id: get_git_version
         run: echo "::set-output name=git_latest_release_version::$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)"
