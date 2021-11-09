@@ -62,11 +62,16 @@ jobs:
         id: check_for_tag
         run: echo "::set-output name=tag_exists::$(git tag | grep -q ${{steps.compose_tag.outputs.expected_tag}} && echo '1' || echo '0')"
 
-  build_and_deploy:
-    name: "Build and Deploy"
+  build:
+    name: "Build"
     needs: [ check_for_tag ]
     if: ${{ needs.check_for_tag.outputs.tag_exists == '0' && github.ref == 'refs/heads/master' }}
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build-and-deploy.yml@master
+    uses: MitchTalmadge/AMP-Dockerized/.github/workflows/build.yml@master
+
+  deploy:
+    name: "Deploy"
+    needs: [ build, check_for_tag ]
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy.yml@master
     with:
       git_release_version: ${{ needs.check_for_tag.outputs.git_release_version }}
       amp_core_version: ${{ needs.check_for_tag.outputs.amp_core_version }}

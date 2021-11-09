@@ -1,0 +1,34 @@
+name: "Build"
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: "Build"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: "Set up QEMU"
+        uses: docker/setup-qemu-action@v1
+      - name: "Set up Docker Buildx"
+        uses: docker/setup-buildx-action@v1
+      - name: "Build Docker Image"
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          tags: amp-dockerized:latest
+          outputs: type=docker, dest=/tmp/amp-dockerized-image.tar
+      - name: "Upload Docker Image Artifact"
+        if: ${{ github.event_name == "workflow_call" }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: amp-dockerized-image.tar
+          path: /tmp/amp-dockerized-image.tar
