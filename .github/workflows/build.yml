@@ -25,7 +25,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           tags: amp-dockerized:latest
-          outputs: type=docker, dest=/tmp/amp-dockerized-image.tar
+          outputs: type=docker,dest=/tmp/amp-dockerized-image.tar
       - name: "Upload Docker Image Artifact"
         if: ${{ github.event_name == 'workflow_call' }}
         uses: actions/upload-artifact@v2
