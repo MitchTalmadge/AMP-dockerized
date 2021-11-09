@@ -4,7 +4,17 @@ on:
   workflow_call:
   workflow_dispatch:
   push:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint
+      - .github/workflows/build.yml
   pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint
+      - .github/workflows/build.yml
 
 jobs:
   build:
