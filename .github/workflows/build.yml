@@ -19,6 +19,8 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v1
+      - name: "Create Output Directory"
+        run: mkdir -p /tmp/images
       - name: "Build Docker Image (AMD64)"
         uses: docker/build-push-action@v2
         with:
