@@ -7,13 +7,13 @@ on:
     paths:
       - Dockerfile
       - .dockerignore
-      - entrypoint
+      - entrypoint/**
       - .github/workflows/build.yml
   pull_request:
     paths:
       - Dockerfile
       - .dockerignore
-      - entrypoint
+      - entrypoint/**
       - .github/workflows/build.yml
 
 jobs:
