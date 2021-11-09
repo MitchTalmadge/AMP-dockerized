@@ -22,14 +22,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ build ]
     steps:
-      - name: "Download Docker Image Artifact"
+      - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v2
         with:
-          name: amp-dockerized-image.tar
+          name: images
           path: /tmp
       - name: "Load Docker Image"
         run: |
-          docker load --input /tmp/amp-dockerized-image.tar
+          docker load --input /tmp/images/amp-dockerized-amd64.tar
+          docker load --input /tmp/images/amp-dockerized-arm64.tar
           docker image ls -a
       - name: "Tag Docker Images"
         run: |

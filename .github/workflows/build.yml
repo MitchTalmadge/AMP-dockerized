@@ -19,16 +19,23 @@ jobs:
         uses: docker/setup-qemu-action@v1
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v1
-      - name: "Build Docker Image"
+      - name: "Build Docker Image (AMD64)"
         uses: docker/build-push-action@v2
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           tags: amp-dockerized:latest
-          outputs: type=docker,dest=/tmp/amp-dockerized-image.tar
-      - name: "Upload Docker Image Artifact"
+          outputs: type=docker,dest=/tmp/images/amp-dockerized-amd64.tar
+      - name: "Build Docker Image (ARM64)"
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          platforms: linux/arm64
+          tags: amp-dockerized:latest
+          outputs: type=docker,dest=/tmp/images/amp-dockerized-arm64.tar
+      - name: "Upload Docker Image Artifacts"
         if: ${{ github.event_name == 'workflow_call' }}
         uses: actions/upload-artifact@v2
         with:
-          name: amp-dockerized-image.tar
-          path: /tmp/amp-dockerized-image.tar
+          name: images
+          path: /tmp/images
