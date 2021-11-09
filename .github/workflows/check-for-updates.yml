@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Find out what version of AMP exists online right now.
   get_latest_version:
     name: "Get Latest Version"
     runs-on: ubuntu-latest
@@ -17,6 +18,8 @@ jobs:
           echo "AMP_CORE_VERSION=$(jq -r '.AMPCore' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
           echo "AMP_INST_MGR_VERSION=$(jq -r '.InstanceManagerCLI' /tmp/AMPVersions.json | sed -e 's/\.//g')" >> $GITHUB_ENV
 
+  # Find out when the latest version of AMP was modified.
+  # Sometimes patches are released under the same version, so only this value will change.
   get_last_modified:
     name: "Get Last Modified"
     runs-on: ubuntu-latest
@@ -24,3 +27,14 @@ jobs:
       - name: "Get Last Modified"
         # Converts the last-modified header to seconds since epoch.
         run: echo "AMP_MODIFIED=$(curl https://cubecoders.com/Downloads/AMP_Latest.zip --head --silent | awk 'match($0, /last-modified:\s+(.+)\s+/, a) {print a[1]}' | date -f - +%s)" >> $GITHUB_ENV
+
+  # Determine if we have a tag for this combination of version and last-modified.
+  check_for_tag:
+    name: "Check for Tag"
+    runs-on: ubuntu-latest
+    needs: [get_latest_version, get_last_modified]
+    steps:
+      - name: "Determine Latest Release Version"
+        run: echo "LATEST_RELEASE_VERSION=$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)" >> $GITHUB_ENV
+      - name: "Debug"
+        run: echo $GITHUB_ENV
