@@ -20,7 +20,6 @@ jobs:
   deploy:
     name: "Deploy"
     runs-on: ubuntu-latest
-    needs: [ build ]
     steps:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v2
@@ -28,8 +27,9 @@ jobs:
           path: /tmp
       - name: "Load Docker Image"
         run: |
-          docker load --input /tmp/amp-dockerized-amd64.tar
-          docker load --input /tmp/amp-dockerized-arm64.tar
+          for f in /tmp/amp-dockerized*.tar; do
+            docker load --input ${f}
+          done
           docker image ls -a
       - name: "Tag Docker Images"
         run: |
