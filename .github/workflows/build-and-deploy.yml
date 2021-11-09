@@ -1,0 +1,52 @@
+name: Build and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      git_release_version:
+        required: true
+        type: string
+      amp_core_version:
+        required: true
+        type: string
+      amp_instmgr_version:
+        required: true
+        type: string
+      amp_last_modified:
+        required: true
+        type: string
+
+jobs:
+  build_and_deploy:
+    name: "Build and Deploy"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: "Build"
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          tags: amp-dockerized:latest
+      - name: "Tag Docker Images"
+        run: |
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}} 
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}
+          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}-${{inputs.amp_last_modified}}
+      - name: "Commit Git Tag"
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          TAG=${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}-${{inputs.amp_last_modified}}
+          git tag -a "${TAG}" -m "Auto Release Latest AMP Version" || { echo "Tag already exists"; exit; }
+          git push --follow-tags
+      - name: "Login to Docker Hub"
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: "Deploy to Docker Hub"
+        run: docker image push --all-tags mitchtalmadge/amp-dockerized
