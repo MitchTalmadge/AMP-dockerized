@@ -45,4 +45,4 @@ jobs:
         id: get_git_version
         run: echo "::set-output name=git_latest_release_version::$(git tag -l --sort=-creatordate | grep -E '^v?[0-9]+$' -m 1)"
       - name: "Compose Tag"
-        run: echo ${{steps.get_git_version.outputs.git_latest_release_version}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}
+        run: echo ${{steps.get_git_version.outputs.git_latest_release_version}}-ampcore${{needs.get_latest_version.outputs.amp_core_version}}-ampinstmgr${{needs.get_latest_version.outputs.amp_instmgr_version}}-${{needs.get_last_modified.outputs.amp_last_modified}}
