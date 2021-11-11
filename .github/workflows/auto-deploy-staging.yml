@@ -8,8 +8,8 @@ on:
 jobs:
   build:
     if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@master
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@${{github.ref}}
 
   deploy:
     needs: [build]
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy-staging.yml@master
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy-staging.yml@${{github.ref}}
