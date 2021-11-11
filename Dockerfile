@@ -98,7 +98,7 @@ RUN dpkg --add-architecture i386 && \
     procps \
     # --------------------
     # Dependencies for Minecraft:
-    openjdk-16-jre-headless \
+    openjdk-17-jre-headless \
     openjdk-11-jre-headless \
     openjdk-8-jre-headless \
     # --------------------
@@ -125,8 +125,8 @@ RUN dpkg --add-architecture i386 && \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-# Set Java 11 to default
-RUN update-alternatives --set java /usr/lib/jvm/java-11-openjdk-amd64/bin/java
+# Set Java default
+RUN update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
 
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
