@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "*/15 * * * *" # Every 15 mins
   workflow_dispatch:
+  create:
+    tags:
+      - "v[0-9]+-.+"
 
 jobs:
   # Find out what version of AMP exists online right now.
