@@ -40,13 +40,13 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           build-args: |
-            "CACHE_AMP_UPGRADE=${{ inputs.for_deploy }}"
+            "CACHE_AMP_UPGRADE=${{ inputs.for_deploy == true }}"
           context: .
           platforms: linux/${{ matrix.arch }}
           tags: amp-dockerized:latest
           outputs: type=docker,dest=/tmp/docker-image-${{ matrix.arch }}.tar
       - name: "Upload Docker Image Artifact"
-        if: ${{ inputs.for_deploy }}
+        if: ${{ inputs.for_deploy == true }}
         uses: actions/upload-artifact@v2
         with:
           name: image-${{ matrix.arch }}
