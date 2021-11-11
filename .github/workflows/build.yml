@@ -28,7 +28,7 @@ jobs:
       matrix:
         arch: [amd64]
     steps:
-      - name: "Checkout"
+      - name: "Checkout Git Repo"
         uses: actions/checkout@v2
         with:
           fetch-depth: 0

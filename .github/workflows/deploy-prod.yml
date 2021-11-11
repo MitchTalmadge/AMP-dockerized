@@ -42,6 +42,10 @@ jobs:
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}} 
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}
           docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}-${{inputs.amp_last_modified}}
+      - name: "Checkout Git Repo"
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: "Commit Git Tag"
         run: |
           git config user.name github-actions
