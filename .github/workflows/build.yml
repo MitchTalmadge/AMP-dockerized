@@ -38,10 +38,10 @@ jobs:
           context: .
           platforms: linux/${{ matrix.arch }}
           tags: amp-dockerized:latest
-          outputs: type=docker,dest=/tmp/amp-dockerized-${{ matrix.arch }}.tar
+          outputs: type=docker,dest=/tmp/docker-image-${{ matrix.arch }}.tar
       - name: "Upload Docker Image Artifact"
         if: ${{ inputs }}
         uses: actions/upload-artifact@v2
         with:
           name: image-${{ matrix.arch }}
-          path: /tmp/amp-dockerized-${{ matrix.arch }}.tar
+          path: /tmp/docker-image-${{ matrix.arch }}.tar

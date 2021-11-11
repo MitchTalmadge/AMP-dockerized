@@ -14,7 +14,7 @@ jobs:
           path: /tmp
       - name: "Load Docker Images"
         run: |
-          for f in /tmp/amp-dockerized*.tar; do
+          for f in $(find /tmp -type f -iname 'docker-image*.tar' -print); do
             docker load --input ${f}
           done
           docker image ls -a
