@@ -13,3 +13,6 @@ jobs:
   deploy:
     needs: [build]
     uses: MitchTalmadge/AMP-dockerized/.github/workflows/deploy-staging.yml@staging
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
