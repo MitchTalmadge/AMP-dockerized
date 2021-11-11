@@ -2,6 +2,10 @@ name: "Build"
 
 on:
   workflow_call:
+    inputs:
+      for_deploy:
+        required: true
+        type: boolean
   workflow_dispatch:
   push:
     paths:
@@ -35,12 +39,14 @@ jobs:
       - name: "Build Docker Image"
         uses: docker/build-push-action@v2
         with:
+          build-args: |
+            "CACHE_AMP_UPGRADE=${{ inputs.for_deploy }}"
           context: .
           platforms: linux/${{ matrix.arch }}
           tags: amp-dockerized:latest
           outputs: type=docker,dest=/tmp/docker-image-${{ matrix.arch }}.tar
       - name: "Upload Docker Image Artifact"
-        if: ${{ inputs }}
+        if: ${{ inputs.for_deploy }}
         uses: actions/upload-artifact@v2
         with:
           name: image-${{ matrix.arch }}

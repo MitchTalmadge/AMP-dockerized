@@ -9,6 +9,8 @@ jobs:
   build:
     if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
     uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@staging
+    with:
+      for_deploy: true
 
   deploy:
     needs: [build]

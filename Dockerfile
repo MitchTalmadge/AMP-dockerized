@@ -1,5 +1,8 @@
 FROM ubuntu:20.04
 
+# Set to false to skip downloading the AMP cache which is used for faster upgrades.
+ARG CACHE_AMP_UPGRADE=true
+
 ENV UID=1000
 ENV GID=1000
 ENV TZ=Etc/UTC
@@ -151,8 +154,13 @@ RUN apt-get update && \
     /var/tmp/*
 
 # Get the latest AMP Core to pre-cache upgrades.
-RUN wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
-    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip
+RUN if [[ "CACHE_AMP_UPGRADE" == "true" ]]; then \
+    echo "Pre-caching AMP Upgrade..." && \
+    wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
+    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
+    else echo "Skipping AMP Upgrade Pre-cache."; \
+    fi
+
 
 # Set up environment
 COPY entrypoint /opt/entrypoint

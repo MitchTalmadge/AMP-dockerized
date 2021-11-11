@@ -67,6 +67,8 @@ jobs:
     needs: [ check_for_tag ]
     if: ${{ needs.check_for_tag.outputs.tag_exists == '0' && github.ref == 'refs/heads/master' }}
     uses: MitchTalmadge/AMP-Dockerized/.github/workflows/build.yml@master
+    with:
+      for_deploy: true
 
   deploy:
     name: "Deploy"
