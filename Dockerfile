@@ -154,7 +154,7 @@ RUN apt-get update && \
     /var/tmp/*
 
 # Get the latest AMP Core to pre-cache upgrades.
-RUN if [[ "CACHE_AMP_UPGRADE" == "true" ]]; then \
+RUN if [ "$CACHE_AMP_UPGRADE" = "true" ]; then \
     echo "Pre-caching AMP Upgrade..." && \
     wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
     wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
