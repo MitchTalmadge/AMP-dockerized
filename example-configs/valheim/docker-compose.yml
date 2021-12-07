@@ -1,4 +1,4 @@
-# This configuration creates one Factorio instance. No ADS instances are created.
+# This configuration creates one Valheim instance. No ADS instances are created.
 # If you intend to run more than one game server, use the ADS module instead.
 version: "3"
 services:
