@@ -67,7 +67,7 @@ fi
 echo "Making sure Main instance exists..."
 if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then
   echo "Creating Main instance... (This can take a while)"
-  su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main 0.0.0.0 \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
+  su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
 
 # Set instances to MainLine or Nightly
