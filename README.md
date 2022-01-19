@@ -135,6 +135,7 @@ Here are the accepted values for the `MODULE` variable:
 | `SevenDays` | 7-Days To Die                                                                                                 |
 | `srcds`     | Source-based games like TF2, GMod, etc. [Full List](https://github.com/CubeCoders/AMP/wiki/Supported-Applications-Compatibility#applications-running-under-the-srcds-module)                                                                    |
 | `StarBound` |                                                                                                               |
+| `Valheim`   |                                                                                                               |
     
 ### User/Group
 
