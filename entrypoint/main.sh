@@ -93,7 +93,7 @@ su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\
 
 # Set Main instance to start on boot if not already.
 echo "Ensuring Main Instance will Start on Boot..."
-su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boot\" | grep \"No\" && ampinstmgr SetStartBoot Main || true"
+su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boot\" | grep \"No\" && ampinstmgr SetStartBoot Main yes || true" 
 
 # Startup
 echo "Starting AMP..."
