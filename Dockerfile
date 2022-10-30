@@ -2,6 +2,7 @@ FROM ubuntu:20.04
 
 # Set to false to skip downloading the AMP cache which is used for faster upgrades.
 ARG CACHE_AMP_UPGRADE=true
+ARG TARGETPLATFORM
 
 ENV UID=1000
 ENV GID=1000
@@ -84,25 +85,24 @@ RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
     cert-sync /tmp/cacert.pem
 
 
-# Install AMP dependencies
-RUN ls -al /usr/local/bin/
-RUN dpkg --add-architecture i386 && \
-    apt-get update && \
-    apt-get install -y \
-    # --------------------
+# Declare and install AMP dependencies
+
+ARG AMPDEPS="\
     # Dependencies for AMP:
     tmux \
     git \
     socat \
     unzip \
     iputils-ping \
-    procps \
-    # --------------------
+    procps"
+    
+ARG MCDEPS="\
     # Dependencies for Minecraft:
     openjdk-17-jre-headless \
     openjdk-11-jre-headless \
-    openjdk-8-jre-headless \
-    # --------------------
+    openjdk-8-jre-headless"
+    
+ARG SRCDSDEPS="\
     # Dependencies for srcds (TF2, GMod, ...)
     lib32gcc1 \
     lib32stdc++6 \
@@ -113,12 +113,28 @@ RUN dpkg --add-architecture i386 && \
     libncurses5:i386 \
     libsdl2-2.0-0 \
     libsdl2-2.0-0:i386 \
-    libtinfo5:i386 \
-    # --------------------
+    libtinfo5:i386"
+
+ARG FACDEPS="\
     # Dependencies for Factorio:
-    xz-utils \
-    # --------------------
-    && \
+    xz-utils"
+
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \ 
+        dpkg --add-architecture aarch64 && \
+        apt-get update && \
+        apt-get install -y \
+	$AMPDEPS \
+	$MCDEPS \
+	$FACDEPS; \ 
+    else \ 
+        dpkg --add-architecture i386 && \ 
+        apt-get update && \
+        apt-get install -y \
+	$AMPDEPS \ 
+	$MCDEPS \
+	$SRCDSDEPS \
+	$FACDEPS; \ 
+    fi && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
@@ -127,7 +143,10 @@ RUN dpkg --add-architecture i386 && \
     /var/tmp/*
 
 # Set Java default
-RUN update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \ 
+    update-alternatives --set java /usr/lib/jvm/java-17-openjdk-arm64/bin/java; \
+    else update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java; \
+    fi
 
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
@@ -136,10 +155,14 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     software-properties-common \
     dirmngr \
-    apt-transport-https && \
-    # Add CubeCoders repository and key
-    apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
-    apt-add-repository "deb http://repo.cubecoders.com/ debian/" && \
+    apt-transport-https
+
+# Add CubeCoders repository and key
+RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+    if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        apt-add-repository "deb http://repo.cubecoders.com/aarch64 debian/"; \
+    else apt-add-repository "deb http://repo.cubecoders.com/ debian/"; \
+    fi && \
     apt-get update && \
     # Just download (don't actually install) ampinstmgr
     apt-get install -y --no-install-recommends --download-only ampinstmgr && \
@@ -158,7 +181,10 @@ RUN apt-get update && \
 RUN if [ "$CACHE_AMP_UPGRADE" = "true" ]; then \
     echo "Pre-caching AMP Upgrade..." && \
     wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
-    wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
+        if [ "$TARGETPLATFORM" = "linux/arm64 "]; then \
+            wget https://cubecoders.com/Downloads/Release/AMP_Latest_AArch64.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
+        else wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
+        fi; \
     else echo "Skipping AMP Upgrade Pre-cache."; \
     fi
 
