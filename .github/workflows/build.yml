@@ -24,9 +24,6 @@ jobs:
   build:
     name: "Build"
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch: [amd64,arm64]
     steps:
       - name: "Checkout Git Repo"
         uses: actions/checkout@v2
@@ -42,12 +39,12 @@ jobs:
           build-args: |
             "CACHE_AMP_UPGRADE=${{ inputs.for_deploy == true }}"
           context: .
-          platforms: linux/${{ matrix.arch }}
+          platforms: linux/amd64,linux/arm64
           tags: amp-dockerized:latest
           outputs: type=docker,dest=/tmp/docker-image-${{ matrix.arch }}.tar
       - name: "Upload Docker Image Artifact"
         if: ${{ inputs.for_deploy == true }}
         uses: actions/upload-artifact@v2
         with:
-          name: image-${{ matrix.arch }}
-          path: /tmp/docker-image-${{ matrix.arch }}.tar
+          name: image
+          path: /tmp/docker-image.tar
