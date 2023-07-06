@@ -13,15 +13,13 @@ jobs:
     name: "Deploy Staging"
     runs-on: ubuntu-latest
     steps:
-      - name: "Download Docker Image Artifacts"
+      - name: "Download Docker Image Artifact"
         uses: actions/download-artifact@v2
         with:
           path: /tmp
-      - name: "Load Docker Images"
+      - name: "Load Docker Image"
         run: |
-          for f in $(find /tmp -type f -iname 'docker-image*.tar' -print); do
-            docker load --input ${f}
-          done
+          docker load --input /tmp/docker-image.tar
           docker image ls -a
       - name: "Extract Branch Name"
         id: extract_branch
