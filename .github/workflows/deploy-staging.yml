@@ -24,7 +24,7 @@ jobs:
           BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
           for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
             ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
-            docker load --input ${f} --platform linux/${ARCH} 
+            docker load --input ${f}
             TAG="mitchtalmadge/amp-dockerized:${BRANCH_NAME}-${ARCH}"
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
