@@ -40,6 +40,7 @@ jobs:
         run: docker image push --all-tags mitchtalmadge/amp-dockerized
       - name: "Deploy Multi-Arch Manifest"
         run: |
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
           MANIFEST="mitchtalmadge/amp-dockerized:${BRANCH_NAME}"
           docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
           docker manifest push ${MANIFEST}
