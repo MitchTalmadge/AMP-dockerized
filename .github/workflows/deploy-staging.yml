@@ -29,7 +29,7 @@ jobs:
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
           done
-          echo "TAGS=${TAGS}" >> $GITHUB_ENV
+          echo "TAGS=${TAGS}" >> $GITHUB_OUTPUT
           docker image ls -a
       - name: "Login to Docker Hub"
         uses: docker/login-action@v1
