@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - "staging*"
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint/**
+      - .github/workflows/**.yml
 
 jobs:
   build:
