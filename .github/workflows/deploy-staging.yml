@@ -29,9 +29,7 @@ jobs:
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
           done
-          MANIFEST_NAME="mitchtalmadge/amp-dockerized:${BRANCH_NAME}"
-          docker manifest create ${MANIFEST_NAME} ${TAGS}
-          echo MANIFEST_NAME=${MANIFEST_NAME} >> $GITHUB_ENV
+          echo "TAGS=${TAGS}" >> $GITHUB_ENV
           docker image ls -a
       - name: "Login to Docker Hub"
         uses: docker/login-action@v1
@@ -39,4 +37,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
-        run: docker manifest push ${{ steps.load_images.outputs.MANIFEST_NAME }}
+        run: docker image push --all-tags mitchtalmadge/amp-dockerized
+      - name: "Deploy Multi-Arch Manifest"
+        run: |
+          MANIFEST="mitchtalmadge/amp-dockerized:${BRANCH_NAME}"
+          docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
+          docker manifest push ${MANIFEST}
