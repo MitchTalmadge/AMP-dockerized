@@ -1,5 +1,5 @@
 # ⚠️ Deprecation Notice
-Unfortunately I do not have the time (or motivation -- see #162) to continue maintaining this project with the overwhelming number of support tickets and infrequent contributions from the community. I simply cannot do this alone; I have too much going on in my life to keep up.
+Unfortunately I do not have the time (or motivation -- see [#162](https://github.com/MitchTalmadge/AMP-dockerized/issues/162)) to continue maintaining this project with the overwhelming number of support tickets and infrequent contributions from the community. I simply cannot do this alone; I have too much going on in my life to keep up.
 
 At the time of writing, this container does not support updating past 2.4.4.0, and unless the build scripts are fixed, it never will. The release process has changed on CubeCoders' side, and it will require time that I do not have to get our own CI/CD processes updated.
 
