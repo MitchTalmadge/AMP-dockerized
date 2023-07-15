@@ -10,6 +10,17 @@ Thank you for all the support over the years. Sorry I couldn't get to all of the
 ## What about my data?
 You can migrate your data into a regular AMP installation, we don't really do anything special with the `.ampdata` folder. Just copy it over after installing the new server. You may need to edit a config file or two to change ports if you mapped them to something different through docker.
 
+## I use Unraid, how can I install AMP there without a Docker image?
+I am not super experienced with Unraid but I believe you can create virtual machines in Unraid. I would create a virtual machine that is just dedicated to AMP. I know this isn't as nice as Docker where resources are shared nicely with the host, but it's the only way I can think of that will get you support from CubeCoders.
+
+## Any alternative Docker images?
+There are very few options. Maybe this one? https://github.com/imagegenius/docker-amp
+
+## I don't want this container to die!
+Neither do I! But I need help to keep it alive. Right now the script which checks for updates is completely out of date, the build process doesn't pull the correct updates, the Mainline/Nightly flag is out of date, and there's 40+ unresolved support tickets. The Unraid forum post has a whole bunch of unresolved problems, too.
+
+I can remove this notice if we can get this image back up to date.
+
 -----
 
 # AMP-dockerized
