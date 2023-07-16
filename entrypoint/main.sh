@@ -8,7 +8,6 @@ echo "Note: This is an UNOFFICIAL IMAGE for CubeCoders AMP. This was created by 
 echo "Please, DO NOT contact CubeCoders (Discord or otherwise) for technical support when using this image."
 echo "They do not support nor endorse this image and will not help you."
 echo "Instead, please direct support requests to https://github.com/MitchTalmadge/AMP-dockerized/issues."
-echo "We are happy to help you there!"
 echo "Thank you!!"
 echo "----------------------"
 echo ""
@@ -108,12 +107,6 @@ shutdown() {
   exit 0
 }
 trap "shutdown" SIGTERM
-
-# Java Notice
-echo "----------------------"
-echo "NOTICE: Java 17 is now the default in this image. Java 16 has been removed in preference of Java 17, which is LTS."
-echo "Use the Java Configuration section in the AMP Web UI to select a specific version. Otherwise, Java 17 will be used automatically."
-echo "----------------------"
 
 # Sleep
 echo "Entrypoint Sleeping. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
