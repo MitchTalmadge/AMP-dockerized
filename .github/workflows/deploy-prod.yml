@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@master
     with:
       for_deploy: true
 
