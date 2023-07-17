@@ -3,6 +3,8 @@ name: "Deploy Production"
 # Run when a tag is pushed starting with "v"
 on:
   push:
+    branches:
+      - "master"
     tags:
       - v*
 
