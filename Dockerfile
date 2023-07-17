@@ -1,8 +1,6 @@
 FROM ubuntu:20.04
 
-# Set to false to skip downloading the AMP cache which is used for faster upgrades.
-ARG CACHE_AMP_UPGRADE=true
-ARG TARGETPLATFORM
+ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ENV UID=1000
 ENV GID=1000
@@ -10,10 +8,12 @@ ENV TZ=Etc/UTC
 ENV PORT=8080
 ENV USERNAME=admin
 ENV PASSWORD=password
-ENV LICENCE=notset
-ENV MODULE=ADS
 ENV IPBINDING=0.0.0.0
 
+ENV AMP_AUTO_UPDATE=true
+ENV AMP_LICENCE=notset
+ENV AMP_MODULE=ADS
+ENV AMP_RELEASE_STREAM=Mainline
 ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
 ENV AMP_SUPPORT_TOKEN=AST0/MTAD
 ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
@@ -176,18 +176,6 @@ RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-
-# Get the latest AMP Core to pre-cache upgrades.
-RUN if [ "$CACHE_AMP_UPGRADE" = "true" ]; then \
-    echo "Pre-caching AMP Upgrade..." && \
-    wget https://cubecoders.com/AMPVersions.json -O /tmp/AMPVersions.json && \
-        if [ "$TARGETPLATFORM" = "linux/arm64 "]; then \
-            wget https://cubecoders.com/Downloads/Release/AMP_Latest_AArch64.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
-        else wget https://cubecoders.com/Downloads/AMP_Latest.zip -O /opt/AMPCache-$(cat /tmp/AMPVersions.json | jq -r '.AMPCore' | sed -e 's/\.//g').zip; \
-        fi; \
-    else echo "Skipping AMP Upgrade Pre-cache."; \
-    fi
-
 
 # Set up environment
 COPY entrypoint /opt/entrypoint

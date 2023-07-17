@@ -1,14 +1,22 @@
 name: "Deploy Staging"
 
 on:
-  workflow_call:
-    secrets:
-      DOCKERHUB_USERNAME:
-        required: true
-      DOCKERHUB_TOKEN:
-        required: true
+  push:
+    branches:
+      - "staging*"
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint/**
+      - .github/workflows/**.yml
 
 jobs:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@staging
+    with:
+      for_deploy: true
+  
   deploy:
     name: "Deploy Staging"
     runs-on: ubuntu-latest

@@ -1,27 +1,17 @@
 name: "Deploy Production"
 
+# Run when a tag is pushed starting with "v"
 on:
-  workflow_call:
-    inputs:
-      git_release_version:
-        required: true
-        type: string
-      amp_core_version:
-        required: true
-        type: string
-      amp_instmgr_version:
-        required: true
-        type: string
-      amp_last_modified:
-        required: true
-        type: string
-    secrets:
-      DOCKERHUB_USERNAME:
-        required: true
-      DOCKERHUB_TOKEN:
-        required: true
+  push:
+    tags:
+      - v*
 
 jobs:
+  build:
+    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml
+    with:
+      for_deploy: true
+
   deploy:
     name: "Deploy"
     runs-on: ubuntu-latest
@@ -30,29 +20,22 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           path: /tmp
-      - name: "Load Docker Image"
+      - name: "Get Tag Name"
+        id: get_tag_name
+        run: echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
+      - name: "Load Docker Images"
+        id: load_images
         run: |
-          for f in $(find /tmp -type f -iname 'docker-image*.tar' -print); do
+          TAGS=""
+          for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
+            ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
+            TAG="mitchtalmadge/amp-dockerized:${{ steps.get_tag_name.outputs.TAG_NAME }}-${ARCH}"
+            TAGS="${TAGS} ${TAG}"
+            docker tag amp-dockerized:latest ${TAG}
           done
+          echo "TAGS=${TAGS}" >> $GITHUB_OUTPUT
           docker image ls -a
-      - name: "Tag Docker Images"
-        run: |
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:latest 
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}} 
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}
-          docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}-${{inputs.amp_last_modified}}
-      - name: "Checkout Git Repo"
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: "Commit Git Tag"
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          TAG=${{inputs.git_release_version}}-ampcore${{inputs.amp_core_version}}-ampinstmgr${{inputs.amp_instmgr_version}}-${{inputs.amp_last_modified}}
-          git tag -a "${TAG}" -m "Auto Release Latest AMP Version" || { echo "Tag already exists"; exit; }
-          git push --follow-tags
       - name: "Login to Docker Hub"
         uses: docker/login-action@v1
         with:
@@ -60,3 +43,10 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
         run: docker image push --all-tags mitchtalmadge/amp-dockerized
+      - name: "Deploy Multi-Arch Manifests"
+        run: |
+          MANIFESTS="mitchtalmadge/amp-dockerized:latest mitchtalmadge/amp-dockerized:${{ steps.get_tag_name.outputs.TAG_NAME }}"
+          for m in ${MANIFESTS}; do
+            docker manifest create ${m} ${{ steps.load_images.outputs.TAGS }}
+            docker manifest push ${m}
+          done

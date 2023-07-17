@@ -12,7 +12,11 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
-# Run user startup script
+# Migrate legacy vars
+export AMP_LICENCE=${AMP_LICENCE:-${LICENCE:-"notset"}}}
+export AMP_MODULE=${AMP_MODULE:-${MODULE:-"ADS"}}
+
+# Users may provide their own startup script for installing dependencies, etc.
 STARTUP_SCRIPT="/home/amp/scripts/startup.sh"
 if [ -f ${STARTUP_SCRIPT} ]; then
   echo "Running startup script..."
@@ -20,14 +24,7 @@ if [ -f ${STARTUP_SCRIPT} ]; then
   /bin/bash ${STARTUP_SCRIPT}
 fi
 
-# Copy the pre-cached AMP Core from the image into the location AMP expects.
-# This will allow upgrades to use the cache and not need to do any downloads.
-echo "Copying AMP Core..."
-mkdir -p /home/amp/.ampdata/instances/
-cp /opt/AMPCache* /home/amp/.ampdata/instances/
-
-# Create user and group that will own the config files (if they don't exist already).
-echo "Ensuring AMP user exists..."
+echo "Creating AMP user..."
 if [ ! "$(getent group ${GID})" ]; then
   # Create group
   addgroup \
@@ -47,57 +44,44 @@ if [ ! "$(getent passwd ${UID})" ]; then
 fi
 APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
 
-# Let all volume data be owned by the new user.
-echo "Ensuring correct file permissions..."
+echo "Checking file permissions..."
 chown -R ${APP_USER}:${APP_GROUP} /home/amp
 
-# Set Timezone
-echo "Setting timezone from TZ env var..."
+echo "Configuring timezone..."
 ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ >/etc/timezone
 dpkg-reconfigure --frontend noninteractive tzdata
 
-# Ensure a Licence was set
-if [ ${LICENCE} = "notset" ]; then
-  echo "Error: no Licence specified. You need to have a valid AMP licence from cubecoders.com specified in the LICENCE environment variable"
+echo "Checking licence..."
+if [ ${AMP_LICENCE} = "notset" ]; then
+  echo "Error: AMP_LICENCE is not set. You need to have a valid AMP licence from cubecoders.com specified in the AMP_LICENCE environment variable"
   exit 1
 fi
 
-# Create Main Instance if not exists
-echo "Making sure Main instance exists..."
+echo "Checking Main instance..."
 if [ ! $(su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | grep "Main") ]; then
   echo "Creating Main instance... (This can take a while)"
-  su ${APP_USER} --command "ampinstmgr CreateInstance \"${MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
+  su ${APP_USER} --command "ampinstmgr CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | grep --line-buffered -v -E '\[[-#]+\]'
 fi
 
-# Set instances to MainLine or Nightly
-if [ ! -z "$NIGHTLY" ]; then
-  # Nightly
-  echo "Setting all instances to use Nightly updates..."
-  su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | while read -r INSTANCE_NAME; do
-    echo "> ${INSTANCE_NAME}:"
-    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" Nightly" | grep --line-buffered -v -E '\[[-#]+\]'
-  done
+echo "Setting release stream to ${AMP_RELEASE_STREAM}..."
+su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | while read -r INSTANCE_NAME; do
+  echo "> ${INSTANCE_NAME}:"
+  su ${APP_USER} --command "ampinstmgr ChangeInstanceStream \"${INSTANCE_NAME}\" ${AMP_RELEASE_STREAM} True" | grep --line-buffered -v -E '\[[-#]+\]'
+done
+
+if [ ${AMP_AUTO_UPDATE} = "true" ]; then
+  echo "Auto-updating instances..."
+  su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
 else
-  # MainLine
-  echo "Setting all instances to use MainLine updates..."
-  su ${APP_USER} --command "ampinstmgr ShowInstancesList" | grep "Instance Name" | awk '{ print $4 }' | while read -r INSTANCE_NAME; do
-    echo "> ${INSTANCE_NAME}:"
-    su ${APP_USER} --command "ampinstmgr Switch \"${INSTANCE_NAME}\" MainLine True" | grep --line-buffered -v -E '\[[-#]+\]'
-  done
+  echo "Skipping automatic updates."
 fi
 
-# Upgrade instances
-echo "Upgrading Instances..."
-su ${APP_USER} --command "ampinstmgr UpgradeAll" | grep --line-buffered -v -E '\[[-#]+\]'
-
-# Set Main instance to start on boot if not already.
-echo "Ensuring Main Instance will Start on Boot..."
+echo "Setting Main instance to start on boot..."
 su ${APP_USER} --command "ampinstmgr ShowInstanceInfo Main | grep \"Start on Boot\" | grep \"No\" && ampinstmgr SetStartBoot Main yes || true" 
 
-# Startup
 echo "Starting AMP..."
 su ${APP_USER} --command "ampinstmgr StartBoot"
-echo "AMP Started."
+echo "AMP Started!"
 
 # Trap SIGTERM for a graceful shutdown
 shutdown() {
@@ -109,6 +93,6 @@ shutdown() {
 trap "shutdown" SIGTERM
 
 # Sleep
-echo "Entrypoint Sleeping. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
+echo "AMP is now running. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
 tail -f /dev/null &
 wait $!

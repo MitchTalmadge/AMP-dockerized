@@ -33,8 +33,6 @@ jobs:
       - name: "Build Docker Image"
         uses: docker/build-push-action@v2
         with:
-          build-args: |
-            "CACHE_AMP_UPGRADE=${{ inputs.for_deploy == true }}"
           context: .
           platforms: linux/${{ matrix.arch }}
           tags: amp-dockerized:latest

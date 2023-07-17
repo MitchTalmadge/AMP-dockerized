@@ -12,12 +12,13 @@ Updates to AMP are automatically bundled into new Docker images. We check for up
 
 **Please DO NOT bug CubeCoders for support without first asking here; they do not support nor endorse this image and will tell you that you are on your own.**
 
-If you need help with AMP when using this image, please [create an issue](https://github.com/MitchTalmadge/AMP-dockerized/issues/new) and we will figure it out! 
+If you need help with AMP when using this image, please [create an issue](https://github.com/MitchTalmadge/AMP-dockerized/issues/new) in this repository.
+
+If you have coding skills and find this repository useful, please consider helping out by answering questions in the issues or making pull requests to fix bugs. I really can't do this alone.
 
 ## Unraid
 If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
 
- 
 # Supported Modules
 
 **Tested and Working:**
@@ -98,9 +99,9 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 
 ### Licence
 
-| Name      | Description                                                                                                          | Default Value                                         |
-|-----------|----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| `LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/) | No Default. AMP will not boot without a real licence. |
+| Name          | Description                                                                                                              | Default Value                                         |
+|---------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
+| `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
 
 **Important Details:**
 - _Americans:_ This is spelled licenCe not licenSe. Got me a few times.
@@ -109,9 +110,9 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 
 ### Module
 
-| Name     | Description                                                      | Default Value |
-|----------|------------------------------------------------------------------|---------------|
-| `MODULE` | Which Module to use for the main instance created by this image. | `ADS`         |
+| Name         | Description                                                                                                                                         | Default Value |
+|--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
+| `AMP_MODULE` | Which Module to use for the Main instance created by this image (note: changing this value will have no effect after the Main instance is created). | `ADS`         |
 
 To run multiple game servers under this image, use the default value of `ADS` (Application Deployment Service) which allows you to create various modules from the web ui.
 
@@ -162,10 +163,10 @@ Example: `TZ=America/Denver`
 | `USERNAME` | The username of the admin user created on first boot.                                                                                                   | `admin`       |
 | `PASSWORD` | The password of the admin user. This value is only used when creating the new user. If you use the default value, please change it after first sign-in. | `password`    |
 
-### Nightly Builds
-| Name  | Description                                                          | Default Value |
-|-------|----------------------------------------------------------------------|---------------|
-| `NIGHTLY` | Set to any value to enable nightly builds. All instances will be migrated to nightly builds on next image start. Unset this variable to go back to MainLine builds (stable releases).    | UNSET        |
+### Release Stream
+| Name                 | Description                                                                                        | Default Value |
+|----------------------|----------------------------------------------------------------------------------------------------|---------------|
+| `AMP_RELEASE_STREAM` | Valid values are `Mainline` or `Development`. Don't change this unless you know what you're doing. | `Mainline`    |
 
 ## Volumes
 
@@ -198,8 +199,11 @@ To restart the AMP instances, just restart the Docker container.
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
 
 # Upgrading AMP
+To upgrade, just restart your container! On startup, we check for updates and install them if they are available.
 
-To upgrade, all you have to do is pull our latest Docker image! We automatically check for AMP updates every hour. When a new version is released, we build and publish an image both as a standalone tag and on `:latest`. 
+| Name              | Description                                                                                     | Default Value |
+|-------------------|-------------------------------------------------------------------------------------------------|---------------|
+| `AMP_AUTO_UPDATE` | Set to `false` if you would not like AMP to automatically update when you reboot the container. | `true`        |
 
 # Contributing
 
