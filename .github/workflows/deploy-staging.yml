@@ -13,7 +13,7 @@ on:
 jobs:
   build:
     if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
-    uses: MitchTalmadge/AMP-dockerized/.github/workflows/build.yml@${{ github.sha }}
+    uses: ./.github/workflows/build.yml
     with:
       for_deploy: true
   
