@@ -1,28 +1,3 @@
-# ⚠️ Deprecation Notice
-Unfortunately I do not have the time (or motivation -- see [#162](https://github.com/MitchTalmadge/AMP-dockerized/issues/162)) to continue maintaining this project with the overwhelming number of support tickets and infrequent contributions from the community. I simply cannot do this alone; I have too much going on in my life to keep up.
-
-At the time of writing, this container does not support updating past 2.4.4.0, and unless the build scripts are fixed, it never will. The release process has changed on CubeCoders' side, and it will require time that I do not have to get our own CI/CD processes updated.
-
-If you would like to fork this project and continue it, I will happily provide a link from this README. Just let me know. Or, if you want to fix the build processes and churn through some of the issues here, I am also happy to revert this deprecation (it's not like I _want_ to see this container die!)
-
-Thank you for all the support over the years. Sorry I couldn't get to all of the many support requests.
-
-## What about my data?
-You can migrate your data into a regular AMP installation, we don't really do anything special with the `.ampdata` folder. Just copy it over after installing the new server. You may need to edit a config file or two to change ports if you mapped them to something different through docker.
-
-## I use Unraid, how can I install AMP there without a Docker image?
-I am not super experienced with Unraid but I believe you can create virtual machines in Unraid. I would create a virtual machine that is just dedicated to AMP. I know this isn't as nice as Docker where resources are shared nicely with the host, but it's the only way I can think of that will get you support from CubeCoders.
-
-## Any alternative Docker images?
-There are very few options. Maybe this one? https://github.com/imagegenius/docker-amp
-
-## I don't want this container to die!
-Neither do I! But I need help to keep it alive. Right now the script which checks for updates is completely out of date, the build process doesn't pull the correct updates, the Mainline/Nightly flag is out of date, and there's 40+ unresolved support tickets. The Unraid forum post has a whole bunch of unresolved problems, too.
-
-I can remove this notice if we can get this image back up to date.
-
------
-
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
@@ -35,12 +10,14 @@ Updates to AMP are automatically bundled into new Docker images. We check for up
 
 # Getting Help
 
-Please see the Deprecation Notice above. I am unable to provide support for this container. I just do not have the time, as much as it pains me.
+You can make an issue if you need help, but I am not always available for quick assistance. Using AMP in this unofficial docker container is an advanced endeavour and you may need to do a little self-debugging and experimentation. Please remember to make backups of important data.
 
 **Please DO NOT bug CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
 
 ## Unraid
-If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/), but it doesn't seem to be very active anymore.
+If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums. Just as this Docker container is not supported by CubeCoders, Unraid is not supported either.
+
+Please remember that this project is community driven by people who have full time responsibilities elsewhere. We will help if we can, but we may not always be able to. If you can help other people, please do!
  
 # Supported Modules
 
