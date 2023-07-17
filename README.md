@@ -1,3 +1,5 @@
+Note: I previously intended to deprecate this container. I am no longer going to do this. I am working hard to catch back up to all of the support tickets. Thanks for your patience.
+
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
