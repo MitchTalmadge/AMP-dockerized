@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
@@ -104,7 +104,7 @@ ARG MCDEPS="\
     
 ARG SRCDSDEPS="\
     # Dependencies for srcds (TF2, GMod, ...)
-    lib32gcc1 \
+    lib32gcc-s1 \
     lib32stdc++6 \
     lib32z1 \
     libbz2-1.0:i386 \
@@ -158,7 +158,7 @@ RUN apt-get update && \
     apt-transport-https
 
 # Add CubeCoders repository and key
-RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+RUN wget -qO - http://repo.cubecoders.com/archive.key | gpg --dearmor > /etc/apt/trusted.gpg.d/cubecoders-archive-keyring.gpg && \
     if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-add-repository "deb http://repo.cubecoders.com/aarch64 debian/"; \
     else apt-add-repository "deb http://repo.cubecoders.com/ debian/"; \
