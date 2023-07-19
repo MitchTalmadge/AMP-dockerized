@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:12-slim
 
 ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
@@ -18,6 +18,7 @@ ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
 ENV AMP_SUPPORT_TOKEN=AST0/MTAD
 ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
 ENV AMP_SUPPORT_URL="https://github.com/MitchTalmadge/AMP-dockerized/"
+ENV LD_LIBRARY_PATH="./:/opt/cubecoders/amp/:/AMP/"
 
 ARG DEBIAN_FRONTEND=noninteractive
 
@@ -34,7 +35,6 @@ RUN apt-get update && \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-
 
 # Configure Locales
 RUN apt-get update && \
@@ -53,58 +53,56 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 
-# Add Mono apt source
+# Install Mono
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    apt-transport-https \
+    apt-get install -y \
     dirmngr \
-    software-properties-common \
-    gnupg \
-    ca-certificates && \
+    ca-certificates \
+    gnupg && \
+    gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/debian stable-buster main" | tee /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get update && \
+    apt-get install -y mono-devel && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
     rm -rf \
     /tmp/* \
     /var/lib/apt/lists/* \
     /var/tmp/*
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" | tee /etc/apt/sources.list.d/mono-official-stable.list
-
-
-# Install Mono Certificates
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates-mono && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
-RUN wget -O /tmp/cacert.pem https://curl.haxx.se/ca/cacert.pem && \
-    cert-sync /tmp/cacert.pem
-
 
 # Declare and install AMP dependencies
 
 ARG AMPDEPS="\
     # Dependencies for AMP:
+    apt-transport-https \
     tmux \
     git \
+    git-lfs \
     socat \
     unzip \
     iputils-ping \
-    procps"
-    
-ARG MCDEPS="\
-    # Dependencies for Minecraft:
-    openjdk-17-jre-headless \
-    openjdk-11-jre-headless \
-    openjdk-8-jre-headless"
-    
+    procps \
+    numactl \
+    gnupg \
+    locales \
+    software-properties-common \
+    libc++-dev \
+    coreutils \
+    libsqlite3-0 \
+    curl \
+    gdb \
+    xz-utils \
+    bzip2 \
+    libzstd1 \
+    libgdiplus \
+    libc6 \
+    libatomic1 \
+    libpulse-dev \
+    liblua5.3-0"
+
 ARG SRCDSDEPS="\
     # Dependencies for srcds (TF2, GMod, ...)
-    lib32gcc1 \
+    lib32gcc-s1 \
     lib32stdc++6 \
     lib32z1 \
     libbz2-1.0:i386 \
@@ -115,25 +113,38 @@ ARG SRCDSDEPS="\
     libsdl2-2.0-0:i386 \
     libtinfo5:i386"
 
+ARG WINEXVFB="\
+    # Needed for games that require Wine and Xvfb
+    xvfb \
+    wine \
+    wine32 \
+    wine64 \
+    wine-binfmt \
+    python3 \
+    winbind \
+    libwine \
+    libwine:i386 \
+    fonts-wine \
+    xauth"
+
 ARG FACDEPS="\
     # Dependencies for Factorio:
     xz-utils"
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \ 
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         dpkg --add-architecture aarch64 && \
         apt-get update && \
         apt-get install -y \
-	$AMPDEPS \
-	$MCDEPS \
-	$FACDEPS; \ 
+        $AMPDEPS \
+        $FACDEPS; \
     else \ 
-        dpkg --add-architecture i386 && \ 
+        dpkg --add-architecture i386 && \
         apt-get update && \
         apt-get install -y \
-	$AMPDEPS \ 
-	$MCDEPS \
-	$SRCDSDEPS \
-	$FACDEPS; \ 
+        $AMPDEPS \
+        $SRCDSDEPS \
+        $WINEXVFB \
+        $FACDEPS; \
     fi && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -142,11 +153,13 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-# Set Java default
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \ 
-    update-alternatives --set java /usr/lib/jvm/java-17-openjdk-arm64/bin/java; \
-    else update-alternatives --set java /usr/lib/jvm/java-17-openjdk-amd64/bin/java; \
-    fi
+# Install Adoptium JDK
+RUN wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor > /usr/share/keyrings/adoptium.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
+    apt-get update && \
+    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
@@ -158,10 +171,11 @@ RUN apt-get update && \
     apt-transport-https
 
 # Add CubeCoders repository and key
-RUN apt-key adv --fetch-keys http://repo.cubecoders.com/archive.key && \
+RUN wget -qO - http://repo.cubecoders.com/archive.key | gpg --dearmor > /etc/apt/trusted.gpg.d/cubecoders-archive-keyring.gpg && \
     if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-add-repository "deb http://repo.cubecoders.com/aarch64 debian/"; \
-    else apt-add-repository "deb http://repo.cubecoders.com/ debian/"; \
+    else \
+        apt-add-repository "deb http://repo.cubecoders.com/ debian/"; \
     fi && \
     apt-get update && \
     # Just download (don't actually install) ampinstmgr
