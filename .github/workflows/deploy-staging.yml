@@ -1,17 +1,26 @@
 name: "Deploy Staging"
 
 on:
-  workflow_call:
-    secrets:
-      DOCKERHUB_USERNAME:
-        required: true
-      DOCKERHUB_TOKEN:
-        required: true
+  push:
+    branches:
+      - "staging*"
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint/**
+      - .github/workflows/**.yml
 
 jobs:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
+    uses: ./.github/workflows/build.yml
+    with:
+      for_deploy: true
+  
   deploy:
     name: "Deploy Staging"
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v2
