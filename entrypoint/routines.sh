@@ -77,7 +77,6 @@ create_amp_user() {
     --shell /bin/bash \
     --no-create-home \
     --ingroup ${APP_GROUP} \
-    --system \
     amp
   fi
   APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
