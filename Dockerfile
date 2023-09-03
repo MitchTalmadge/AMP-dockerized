@@ -1,5 +1,5 @@
 FROM debian:12-slim
-
+ 
 ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
 ENV UID=1000
