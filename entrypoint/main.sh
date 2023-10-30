@@ -50,5 +50,6 @@ trap "stop_amp" SIGTERM
 
 # Sleep
 echo "AMP is now running. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
+monitor_amp &
 tail -f /dev/null &
 wait $!

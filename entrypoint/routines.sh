@@ -100,6 +100,14 @@ handle_error() {
   exit 1
 }
 
+monitor_amp() {
+  # Periodically process pending tasks (e.g. upgrade, reboots, ...)
+  while true; do
+    run_amp_command_silently "ProcessPendingTasks"
+    sleep 5 # The UI's restart timeout is 10 seconds, so let's be safe.
+  done
+}
+
 run_startup_script() {
   # Users may provide their own startup script for installing dependencies, etc.
   STARTUP_SCRIPT="/home/amp/scripts/startup.sh"

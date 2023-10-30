@@ -11,3 +11,7 @@ does_main_instance_exist() {
 run_amp_command() {
   su ${APP_USER} --command "ampinstmgr $1"
 }
+
+run_amp_command_silently() {
+  su ${APP_USER} --command "ampinstmgr --silent $1"
+}
