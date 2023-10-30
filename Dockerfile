@@ -153,11 +153,15 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
     /var/lib/apt/lists/* \
     /var/tmp/*
 
-# Install Adoptium JDK
-RUN wget -qO- https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor > /usr/share/keyrings/adoptium.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb bookworm main" > /etc/apt/sources.list.d/adoptium.list && \
+# Install Corretto JDK
+RUN wget -O- https://apt.corretto.aws/corretto.key | gpg --dearmor > /etc/apt/trusted.gpg.d/corretto.gpg && \
+    add-apt-repository "deb https://apt.corretto.aws stable main" && \
     apt-get update && \
-    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk && \
+    apt-get install -y \
+        java-1.8.0-amazon-corretto-jdk \
+        java-11-amazon-corretto-jdk \
+        java-17-amazon-corretto-jdk \
+        java-21-amazon-corretto-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
