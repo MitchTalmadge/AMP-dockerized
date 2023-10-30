@@ -118,9 +118,18 @@ run_startup_script() {
   fi
 }
 
+shutdown() {
+  echo "Shutting down... (Signal ${1})"
+  if [ -n "${AMP_STARTED}" ] && [ "${AMP_STARTED}" -eq 1 ] && [ "${1}" != "KILL" ]; then
+    stop_amp
+  fi
+  exit 0
+}
+
 start_amp() {
   echo "Starting AMP..."
   run_amp_command "StartBoot"
+  export AMP_STARTED=1
   echo "AMP Started!"
 }
 
@@ -128,7 +137,6 @@ stop_amp() {
   echo "Stopping AMP..."
   run_amp_command "StopAll"
   echo "AMP Stopped."
-  exit 0
 }
 
 upgrade_instances() {
