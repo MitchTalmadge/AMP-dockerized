@@ -62,7 +62,7 @@ configure_timezone() {
 }
 
 create_amp_user() {
-  echo "Creating AMP user..."
+  echo "Creating AMP group..."
   if [ ! "$(getent group ${GID})" ]; then
     # Create group
     addgroup \
@@ -70,16 +70,22 @@ create_amp_user() {
     amp
   fi
   APP_GROUP=$(getent group ${GID} | awk -F ":" '{ print $1 }')
+  echo "Group Created: ${APP_GROUP} (${GID})"
+
+  echo "Creating AMP user..."
   if [ ! "$(getent passwd ${UID})" ]; then
     # Create user
     adduser \
-    --uid ${UID} \
-    --shell /bin/bash \
-    --no-create-home \
-    --ingroup ${APP_GROUP} \
-    amp
+      --uid ${UID} \
+      --shell /bin/bash \
+      --no-create-home \
+      --disabled-password \
+      --gecos "" \
+      --ingroup ${APP_GROUP} \
+      amp
   fi
   APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
+  echo "User Created: ${APP_USER} (${UID})"
 }
 
 handle_error() {
