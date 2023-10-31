@@ -25,6 +25,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 # Initialize
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    apt-transport-https \
     jq \
     sed \
     tzdata \
@@ -72,36 +73,35 @@ RUN apt-get update && \
 
 # Declare and install AMP dependencies
 
+# AMP core dependencies
 ARG AMPDEPS="\
-    # Dependencies for AMP:
-    apt-transport-https \
-    tmux \
-    git \
-    git-lfs \
-    socat \
-    unzip \
-    iputils-ping \
-    procps \
-    numactl \
-    gnupg \
-    locales \
-    software-properties-common \
-    libc++-dev \
+    bzip2 \
     coreutils \
-    libsqlite3-0 \
     curl \
     gdb \
-    xz-utils \
-    bzip2 \
-    libzstd1 \
-    libgdiplus \
+    git \
+    git-lfs \
+    gnupg \
+    iputils-ping \
+    libc++-dev \
     libc6 \
     libatomic1 \
+    libgdiplus \
+    liblua5.3-0 \
     libpulse-dev \
-    liblua5.3-0"
+    libsqlite3-0 \
+    libzstd1 \
+    locales \
+    numactl \
+    procps \
+    software-properties-common \
+    socat \
+    tmux \
+    unzip \
+    xz-utils"
 
+# srcds (TF2, GMod, ...) dependencies
 ARG SRCDSDEPS="\
-    # Dependencies for srcds (TF2, GMod, ...)
     lib32gcc-s1 \
     lib32stdc++6 \
     lib32z1 \
@@ -113,38 +113,32 @@ ARG SRCDSDEPS="\
     libsdl2-2.0-0:i386 \
     libtinfo5:i386"
 
+# Needed for games that require Wine and Xvfb
 ARG WINEXVFB="\
-    # Needed for games that require Wine and Xvfb
-    xvfb \
+    fonts-wine \
+    libwine \
+    libwine:i386 \
+    python3 \
     wine \
     wine32 \
     wine64 \
     wine-binfmt \
-    python3 \
     winbind \
-    libwine \
-    libwine:i386 \
-    fonts-wine \
-    xauth"
-
-ARG FACDEPS="\
-    # Dependencies for Factorio:
-    xz-utils"
+    xauth \
+    xvfb"
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         dpkg --add-architecture aarch64 && \
         apt-get update && \
         apt-get install -y \
-        $AMPDEPS \
-        $FACDEPS; \
+        $AMPDEPS; \
     else \ 
         dpkg --add-architecture i386 && \
         apt-get update && \
         apt-get install -y \
         $AMPDEPS \
         $SRCDSDEPS \
-        $WINEXVFB \
-        $FACDEPS; \
+        $WINEXVFB; \
     fi && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
