@@ -119,6 +119,7 @@ ARG WINEXVFB="\
     libwine \
     libwine:i386 \
     python3 \
+    python3-venv \
     wine \
     wine32 \
     wine64 \
