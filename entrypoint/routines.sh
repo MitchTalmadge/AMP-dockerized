@@ -62,7 +62,7 @@ configure_timezone() {
 }
 
 create_amp_user() {
-  echo "Creating AMP user..."
+  echo "Creating AMP group..."
   if [ ! "$(getent group ${GID})" ]; then
     # Create group
     addgroup \
@@ -70,17 +70,22 @@ create_amp_user() {
     amp
   fi
   APP_GROUP=$(getent group ${GID} | awk -F ":" '{ print $1 }')
+  echo "Group Created: ${APP_GROUP} (${GID})"
+
+  echo "Creating AMP user..."
   if [ ! "$(getent passwd ${UID})" ]; then
     # Create user
     adduser \
-    --uid ${UID} \
-    --shell /bin/bash \
-    --no-create-home \
-    --ingroup ${APP_GROUP} \
-    --system \
-    amp
+      --uid ${UID} \
+      --shell /bin/bash \
+      --no-create-home \
+      --disabled-password \
+      --gecos "" \
+      --ingroup ${APP_GROUP} \
+      amp
   fi
   APP_USER=$(getent passwd ${UID} | awk -F ":" '{ print $1 }')
+  echo "User Created: ${APP_USER} (${UID})"
 }
 
 handle_error() {
@@ -95,6 +100,14 @@ handle_error() {
   exit 1
 }
 
+monitor_amp() {
+  # Periodically process pending tasks (e.g. upgrade, reboots, ...)
+  while true; do
+    run_amp_command_silently "ProcessPendingTasks"
+    sleep 5 # The UI's restart timeout is 10 seconds, so let's be safe.
+  done
+}
+
 run_startup_script() {
   # Users may provide their own startup script for installing dependencies, etc.
   STARTUP_SCRIPT="/home/amp/scripts/startup.sh"
@@ -105,9 +118,18 @@ run_startup_script() {
   fi
 }
 
+shutdown() {
+  echo "Shutting down... (Signal ${1})"
+  if [ -n "${AMP_STARTED}" ] && [ "${AMP_STARTED}" -eq 1 ] && [ "${1}" != "KILL" ]; then
+    stop_amp
+  fi
+  exit 0
+}
+
 start_amp() {
   echo "Starting AMP..."
   run_amp_command "StartBoot"
+  export AMP_STARTED=1
   echo "AMP Started!"
 }
 
@@ -115,7 +137,6 @@ stop_amp() {
   echo "Stopping AMP..."
   run_amp_command "StopAll"
   echo "AMP Stopped."
-  exit 0
 }
 
 upgrade_instances() {

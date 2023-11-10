@@ -16,6 +16,7 @@ echo ""
 source /opt/entrypoint/utils.sh
 source /opt/entrypoint/routines.sh
 trap 'handle_error' ERR
+trap_with_arg 'shutdown' INT TERM HUP QUIT KILL 
 
 # Migrate legacy vars
 export AMP_LICENCE=${LICENCE:-${AMP_LICENCE:-"notset"}}
@@ -45,10 +46,9 @@ else
 fi
 
 start_amp
-# Trap SIGTERM for a graceful shutdown
-trap "stop_amp" SIGTERM
 
 # Sleep
 echo "AMP is now running. Logs can be viewed through AMP web UI or at ampdata/instances/Main/AMP_Logs"
+monitor_amp &
 tail -f /dev/null &
 wait $!
