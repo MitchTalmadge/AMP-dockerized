@@ -1,3 +1,5 @@
+Note: I previously intended to deprecate this container. I am no longer going to do this. I am working hard to catch back up to all of the support tickets. Thanks for your patience.
+
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
@@ -10,15 +12,19 @@ Updates to AMP are automatically bundled into new Docker images. We check for up
 
 # Getting Help
 
-**Please DO NOT bug CubeCoders for support without first asking here; they do not support nor endorse this image and will tell you that you are on your own.**
+You can make an issue if you need help, but I am not always available for quick assistance. Using AMP in this unofficial docker container is an advanced endeavour and you may need to do a little self-debugging and experimentation. Please remember to make backups of important data.
 
 If you need help with AMP when using this image, please [create an issue](https://github.com/MitchTalmadge/AMP-dockerized/issues/new) in this repository.
 
 If you have coding skills and find this repository useful, please consider helping out by answering questions in the issues or making pull requests to fix bugs. I really can't do this alone.
 
-## Unraid
-If you are using Unraid, please check out [this support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) made by one of our community members, [@CorneliousJD](https://github.com/CorneliousJD)!
+**Please DO NOT bug CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
 
+## Unraid
+If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums. Just as this Docker container is not supported by CubeCoders, Unraid is not supported either.
+
+Please remember that this project is community driven by people who have full time responsibilities elsewhere. We will help if we can, but we may not always be able to. If you can help other people, please do!
+ 
 # Supported Modules
 
 **Tested and Working:**
