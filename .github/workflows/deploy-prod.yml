@@ -7,7 +7,10 @@ on:
     tags:
       - v*
   workflow_dispatch:
-  
+    inputs:
+      tag:
+        required: true
+        description: e.g. v22
 
 jobs:
   build:
@@ -26,7 +29,12 @@ jobs:
           path: /tmp
       - name: "Get Tag Name"
         id: get_tag_name
-        run: echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_OUTPUT
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.tag }}" != "" ]]; then
+            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+          else
+            echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
+          fi
       - name: "Load Docker Images"
         id: load_images
         run: |
