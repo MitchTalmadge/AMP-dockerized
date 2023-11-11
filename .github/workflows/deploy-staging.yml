@@ -1,33 +1,45 @@
 name: "Deploy Staging"
 
 on:
-  workflow_call:
-    secrets:
-      DOCKERHUB_USERNAME:
-        required: true
-      DOCKERHUB_TOKEN:
-        required: true
+  push:
+    branches:
+      - "staging*"
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint/**
+      - .github/workflows/**.yml
 
 jobs:
+  build:
+    if: ${{ startsWith(github.ref, 'refs/heads/staging') }}
+    uses: ./.github/workflows/build.yml
+    with:
+      for_deploy: true
+  
   deploy:
     name: "Deploy Staging"
     runs-on: ubuntu-latest
+    needs: build
     steps:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v2
         with:
           path: /tmp
       - name: "Load Docker Images"
+        id: load_images
         run: |
-          for f in $(find /tmp -type f -iname 'docker-image*.tar' -print); do
+          TAGS=""
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+          for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
+            ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
+            TAG="mitchtalmadge/amp-dockerized:${BRANCH_NAME}-${ARCH}"
+            TAGS="${TAGS} ${TAG}"
+            docker tag amp-dockerized:latest ${TAG}
           done
+          echo "TAGS=${TAGS}" >> $GITHUB_OUTPUT
           docker image ls -a
-      - name: "Extract Branch Name"
-        id: extract_branch
-        run: echo "::set-output name=name::$(echo ${GITHUB_REF#refs/heads/})"
-      - name: "Tag Docker Image"
-        run: docker tag amp-dockerized:latest mitchtalmadge/amp-dockerized:${{ steps.extract_branch.outputs.name }}
       - name: "Login to Docker Hub"
         uses: docker/login-action@v1
         with:
@@ -35,3 +47,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
         run: docker image push --all-tags mitchtalmadge/amp-dockerized
+      - name: "Deploy Multi-Arch Manifest"
+        run: |
+          BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})
+          MANIFEST="mitchtalmadge/amp-dockerized:${BRANCH_NAME}"
+          docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
+          docker manifest push ${MANIFEST}
