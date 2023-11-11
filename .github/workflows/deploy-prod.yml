@@ -31,9 +31,9 @@ jobs:
         id: get_tag_name
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.tag }}" != "" ]]; then
-            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+            echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
           else
-            echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_ENV
+            echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_OUTPUT
           fi
       - name: "Load Docker Images"
         id: load_images
