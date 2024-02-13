@@ -118,7 +118,7 @@ ARG WINEXVFB="\
     python3 \
     python3-venv \
     cabextract \
-    winehq-stable
+    winehq-stable \
     winbind \
     xauth \
     xvfb"
