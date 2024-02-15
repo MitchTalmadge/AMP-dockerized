@@ -140,7 +140,8 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         apt-get install -y \
         $AMPDEPS \
         $SRCDSDEPS \
-        $WINEXVFB; \
+        $WINEXVFB \
+        && ln -s /usr/lib/wine/wine64 /usr/bin/wine64; \
     fi && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
