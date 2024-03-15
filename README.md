@@ -1,4 +1,4 @@
-Note: I previously intended to deprecate this container. I am no longer going to do this. I am working hard to catch back up to all of the support tickets. Thanks for your patience.
+**Note: A lack of commits & releases does not mean this project is dead. The image is configured by default to auto-update AMP on startup, meaning that new image releases are often not necessary.**
 
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
