@@ -1,4 +1,13 @@
-**Note: A lack of commits & releases does not mean this project is dead. The image is configured by default to auto-update AMP on startup, meaning that new image releases are often not necessary.**
+> [!CAUTION]
+> **This is a community-made unofficial image, and is NOT endorsed by CubeCoders.**
+> **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
+> 
+> This project is community driven by people who have full time responsibilities elsewhere. You should be able to navigate Docker, Linux, bash, etc. and feel comfortable debugging containers on your own if you intend to use this image. I will help if I get time, but I have a full time job and family that I want to hang out with.
+>
+> That said, if you have time and are able to help, please feel free! I love PRs!
+
+> [!NOTE]  
+> A lack of commits & releases does not mean this project is dead. The image is configured by default to auto-update AMP on startup, meaning that new image releases are often not necessary.
 
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
@@ -8,7 +17,8 @@ In a nutshell, AMP (Application Management Panel) allows you to manage one or mo
 
 Updates to AMP are automatically bundled into new Docker images. We check for updates every 15 minutes and package them up for you right away!
 
-*Please note:* This is a community-made unofficial image, and is not endorsed by CubeCoders.
+> [!WARNING]
+> **This is a community-made unofficial image, and is not endorsed by CubeCoders.**
 
 # Getting Help
 
@@ -18,12 +28,11 @@ If you need help with AMP when using this image, please [create an issue](https:
 
 If you have coding skills and find this repository useful, please consider helping out by answering questions in the issues or making pull requests to fix bugs. I really can't do this alone.
 
-**Please DO NOT bug CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
+> [!WARNING]
+> **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
 
 ## Unraid
-If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums. Just as this Docker container is not supported by CubeCoders, Unraid is not supported either.
-
-Please remember that this project is community driven by people who have full time responsibilities elsewhere. We will help if we can, but we may not always be able to. If you can help other people, please do!
+If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums. I do not officially support Unraid but I'll try to help if I have time.
  
 # Supported Modules
 
@@ -205,7 +214,9 @@ To restart the AMP instances, just restart the Docker container.
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
 
 # Upgrading AMP
-To upgrade, just restart your container! On startup, we check for updates and install them if they are available.
+To upgrade, just restart your container! On startup, the container will check for updates and install them if they are available.
+
+You can also just use the update button within the UI. It may take a little while longer to boot than the UI predicts.
 
 | Name              | Description                                                                                     | Default Value |
 |-------------------|-------------------------------------------------------------------------------------------------|---------------|
