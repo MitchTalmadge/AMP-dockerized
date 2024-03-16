@@ -15,8 +15,6 @@ This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debi
 
 In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP#buyAMP) to use this image.
 
-Updates to AMP are automatically bundled into new Docker images. We check for updates every 15 minutes and package them up for you right away!
-
 > [!WARNING]
 > **This is a community-made unofficial image, and is not endorsed by CubeCoders.**
 
