@@ -30,7 +30,7 @@ get_from_github() {
   repo_name="${3:-${AMP_TEMPLATEREPO_REPO}}"
   repo_ref="${4:-${AMP_TEMPLATEREPO_REF}}"
 
-  [ -n "$repo_path" ] && { echo "Now file given, aborting"; return; }
+  [ -n "$repo_path" ] && { echo "No file given, aborting"; return; }
 
   su ${APP_USER} -c "
     curl \
