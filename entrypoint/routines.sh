@@ -168,7 +168,7 @@ setup_template() {
 
   # change directory to the first subfolder of AMP (docker version should only have 1)
   pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
-  download_templates
+  download_template
 
   create_merged_template
 
@@ -176,8 +176,8 @@ setup_template() {
   popd
 }
 
-download_templates() {
-  # Download templates  
+download_template() {
+  # Download template
   [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
   for required_file in "${REQUIRED_FILES[@]}"; do
       eval "curr_file=\"$required_file\""

@@ -42,7 +42,7 @@ get_from_github() {
 safe_link() {
   source_file="$1"
   target_file="${2:-${source_file}}"
-  
+
   [[ -L ./${target_file} ]] && rm ./${target_file}
   [ -f ./${target_file} ] && mv ./${target_file} ./${target_file}.bak
   # symbolic link the file
