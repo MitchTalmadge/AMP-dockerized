@@ -166,8 +166,7 @@ setup_template() {
     REQUIRED_FILES=('${amptemplate}.kvp' '${amptemplate}config.json' '${amptemplate}metaconfig.json')
   fi
 
-  # TODO: move var processing to function
-
+  # change directory to the first subfolder of AMP (docker version should only have 1)
   pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
   download_templates
 
@@ -178,8 +177,7 @@ setup_template() {
 }
 
 download_templates() {
-  # Download templates
-  # change directory to the first subfolder of AMP (docker version should only have 1)
+  # Download templates  
   [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
   for required_file in "${REQUIRED_FILES[@]}"; do
       eval "curr_file=\"$required_file\""
@@ -212,10 +210,16 @@ apply_template_to_instance() {
   [ -f ./GenericModule.kvp ] && mv ./GenericModule.kvp ./GenericModule_${amptemplate}_bak.kvp
   # symbolic link the merged template
   su ${APP_USER} -c "ln -s ${amptemplate}_merged.kvp GenericModule.kvp"
+
+  # backup old configmanifest if it's not already done
   [[ -L ./configmanifest.json ]] && rm ./configmanifest.json
   [ -f ./configmanifest.json ] && mv ./configmanifest.json ./configmanifest_${amptemplate}_bak.json
+  # symbolic link configmanifest
   su ${APP_USER} -c "ln -s ${amptemplate}config.json configmanifest.json"
+
+  # backup old metaconfig if it's not already done
   [[ -L ./metaconfig.json ]] && rm ./metaconfig.json
   [ -f ./metaconfig.json ] && mv ./metaconfig.json ./metaconfig_${amptemplate}_bak.json
+  # symbolic link metaconfig
   su ${APP_USER} -c "ln -s ${amptemplate}metaconfig.json metaconfig.json"
 }
