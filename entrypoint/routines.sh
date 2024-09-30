@@ -205,21 +205,9 @@ create_merged_template() {
 }
 
 apply_template_to_instance() {
-  # backup old GenericModule if it's not already done
-  [[ -L ./GenericModule.kvp ]] && rm ./GenericModule.kvp
-  [ -f ./GenericModule.kvp ] && mv ./GenericModule.kvp ./GenericModule_${amptemplate}_bak.kvp
-  # symbolic link the merged template
-  su ${APP_USER} -c "ln -s ${amptemplate}_merged.kvp GenericModule.kvp"
+  safe_link "${amptemplate}_merged.kvp" "GenericModule.kvp"
 
-  # backup old configmanifest if it's not already done
-  [[ -L ./configmanifest.json ]] && rm ./configmanifest.json
-  [ -f ./configmanifest.json ] && mv ./configmanifest.json ./configmanifest_${amptemplate}_bak.json
-  # symbolic link configmanifest
-  su ${APP_USER} -c "ln -s ${amptemplate}config.json configmanifest.json"
+  safe_link "${amptemplate}config.json" "configmanifest.json"
 
-  # backup old metaconfig if it's not already done
-  [[ -L ./metaconfig.json ]] && rm ./metaconfig.json
-  [ -f ./metaconfig.json ] && mv ./metaconfig.json ./metaconfig_${amptemplate}_bak.json
-  # symbolic link metaconfig
-  su ${APP_USER} -c "ln -s ${amptemplate}metaconfig.json metaconfig.json"
+  safe_link "${amptemplate}metaconfig.json" "metaconfig.json"
 }

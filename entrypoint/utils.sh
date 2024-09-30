@@ -38,3 +38,13 @@ get_from_github() {
       https://api.github.com/repos/${repo_owner}/${repo_name}/contents/${repo_path}\?ref\=${repo_ref} -o ${repo_path}
   "
 }
+
+safe_link() {
+  source_file="$1"
+  target_file="${2:-${source_file}}"
+  
+  [[ -L ./${target_file} ]] && rm ./${target_file}
+  [ -f ./${target_file} ] && mv ./${target_file} ./${target_file}.bak
+  # symbolic link the file
+  su ${APP_USER} -c "ln -s ${source_file} ${target_file}"
+}
