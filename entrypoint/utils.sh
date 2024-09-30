@@ -23,3 +23,18 @@ trap_with_arg() {
     trap "$func $sig" "$sig"
   done
 }
+
+get_from_github() {
+  repo_path="$1"
+  repo_owner="${2:-${AMP_TEMPLATEREPO_OWNER}}"
+  repo_name="${3:-${AMP_TEMPLATEREPO_REPO}}"
+  repo_ref="${4:-${AMP_TEMPLATEREPO_REF}}"
+
+  [ -n "$repo_path" ] && { echo "Now file given, aborting"; return; }
+
+  su ${APP_USER} -c "
+    curl \
+      -H 'Accept: application/vnd.github.VERSION.raw' \
+      https://api.github.com/repos/${repo_owner}/${repo_name}/contents/${repo_path}\?ref\=${repo_ref} -o ${repo_path}
+  "
+}

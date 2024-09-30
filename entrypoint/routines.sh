@@ -143,3 +143,79 @@ upgrade_instances() {
   echo "Upgrading instances..."
   run_amp_command "UpgradeAll" | consume_progress_bars
 }
+
+setup_template() {
+  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 1
+
+  # Dockerfolder containing instances
+  AMP_FOLDER="${AMP_FOLDER:-/home/amp/.ampdata/instances}"
+
+  # AMP's template repo details, note if you're not logged into github you'll eventually hit a rate limit.. be aware of this (I probably should add a check for that)
+  AMP_TEMPLATEREPO_OWNER="${AMP_TEMPLATEREPO_OWNER:-CubeCoders}"
+  AMP_TEMPLATEREPO_REPO="${AMP_TEMPLATEREPO_REPO:-AMPTemplates}"
+  AMP_TEMPLATEREPO_REF="${AMP_TEMPLATEREPO_REF:-HEAD}"
+
+  amptemplate="${AMP_TEMPLATE%.*}"
+
+  # Not needed to touch these variables (unless you know what you're doing)
+  if [ -z "${EXCLUDED_KVP+x}" ]; then
+    EXCLUDED_KVP=('AnalyticsPlugin.kvp' 'EmailSenderPlugin.kvp' 'FileManagerPlugin.kvp' 'GenericModule.kvp' 'LocalFileBackupPlugin.kvp' 'RCONPlugin.kvp' 'WebRequestPlugin.kvp' 'steamcmdplugin.kvp')
+  fi
+
+  if [ -z "${REQUIRED_FILES+x}" ]; then
+    REQUIRED_FILES=('${amptemplate}.kvp' '${amptemplate}config.json' '${amptemplate}metaconfig.json')
+  fi
+
+  # TODO: move var processing to function
+
+  pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
+  download_templates
+
+  create_merged_template
+
+  apply_template_to_instance
+  popd
+}
+
+download_templates() {
+  # Download templates
+  # change directory to the first subfolder of AMP (docker version should only have 1)
+  [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
+  for required_file in "${REQUIRED_FILES[@]}"; do
+      eval "curr_file=\"$required_file\""
+      get_from_github ${curr_file}
+      [ ! -f $curr_file ] && { echo "required file: '${curr_file}' not found"; exit 1; }
+  done
+}
+
+create_merged_template() {
+  # create an empty merged kvp
+  touch ${amptemplate}_merged.kvp
+  while IFS="=" read key value rest; do
+      if [ -n "$rest" ]; then
+          value="$value=$rest"
+      fi
+      if [[ $value =~ @IncludeJson\[([^\]]+)\] ]]; then
+          jsonfile="${BASH_REMATCH[1]}"
+          get_from_github ${jsonfile}
+          [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
+          value="$(jq -c '.' $jsonfile)"
+      fi
+      echo "$key=$value" >> ${amptemplate}_merged.kvp
+  done < "${amptemplate}.kvp"
+  chown ${APP_USER}:${APP_GROUP} ${amptemplate}_merged.kvp
+}
+
+apply_template_to_instance() {
+  # backup old GenericModule if it's not already done
+  [[ -L ./GenericModule.kvp ]] && rm ./GenericModule.kvp
+  [ -f ./GenericModule.kvp ] && mv ./GenericModule.kvp ./GenericModule_${amptemplate}_bak.kvp
+  # symbolic link the merged template
+  su ${APP_USER} -c "ln -s ${amptemplate}_merged.kvp GenericModule.kvp"
+  [[ -L ./configmanifest.json ]] && rm ./configmanifest.json
+  [ -f ./configmanifest.json ] && mv ./configmanifest.json ./configmanifest_${amptemplate}_bak.json
+  su ${APP_USER} -c "ln -s ${amptemplate}config.json configmanifest.json"
+  [[ -L ./metaconfig.json ]] && rm ./metaconfig.json
+  [ -f ./metaconfig.json ] && mv ./metaconfig.json ./metaconfig_${amptemplate}_bak.json
+  su ${APP_USER} -c "ln -s ${amptemplate}metaconfig.json metaconfig.json"
+}
