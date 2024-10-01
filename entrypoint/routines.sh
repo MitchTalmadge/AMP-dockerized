@@ -144,8 +144,9 @@ upgrade_instances() {
   run_amp_command "UpgradeAll" | consume_progress_bars
 }
 
+
 setup_template() {
-  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 1
+  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 0
 
   # Dockerfolder containing instances
   AMP_FOLDER="${AMP_FOLDER:-/home/amp/.ampdata/instances}"
@@ -181,9 +182,11 @@ download_template() {
   [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
   for required_file in "${REQUIRED_FILES[@]}"; do
       eval "curr_file=\"$required_file\""
-      get_from_github ${curr_file}
+      get_from_github "${curr_file}"
       [ ! -f $curr_file ] && { echo "required file: '${curr_file}' not found"; exit 1; }
+      echo "Download done of ${curr_file}"
   done
+  return
 }
 
 create_merged_template() {
@@ -195,13 +198,15 @@ create_merged_template() {
       fi
       if [[ $value =~ @IncludeJson\[([^\]]+)\] ]]; then
           jsonfile="${BASH_REMATCH[1]}"
-          get_from_github ${jsonfile}
+          get_from_github "${jsonfile}"
           [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
           value="$(jq -c '.' $jsonfile)"
+          echo "Jsonfile ${jsonfile} merged with the main template"
       fi
       echo "$key=$value" >> ${amptemplate}_merged.kvp
   done < "${amptemplate}.kvp"
   chown ${APP_USER}:${APP_GROUP} ${amptemplate}_merged.kvp
+  return
 }
 
 apply_template_to_instance() {
@@ -210,4 +215,5 @@ apply_template_to_instance() {
   safe_link "${amptemplate}config.json" "configmanifest.json"
 
   safe_link "${amptemplate}metaconfig.json" "metaconfig.json"
+  return
 }
