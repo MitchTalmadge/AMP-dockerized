@@ -17,7 +17,33 @@ configure_main_instance() {
   echo "Checking Main instance existence..."
   if ! does_main_instance_exist; then
     echo "Creating Main instance... (This can take a while)"
-    run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | consume_progress_bars
+    
+    if [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ]; then
+      pushd /tmp
+      amptemplate="${AMP_TEMPLATE%.*}"
+
+      AMP_TEMPLATEREPO_OWNER="${AMP_TEMPLATEREPO_OWNER:-CubeCoders}"
+      AMP_TEMPLATEREPO_REPO="${AMP_TEMPLATEREPO_REPO:-AMPTemplates}"
+      AMP_TEMPLATEREPO_REF="${AMP_TEMPLATEREPO_REF:-HEAD}"
+      get_from_github ${amptemplate}.kvp
+      
+      amp_args=$(awk -F'=' 'NF == 2 && $2 != ""' "${amptemplate}.kvp" | while IFS='=' read -r key value; do
+        # Determine if the value is valid JSON
+        if echo "$value" | jq empty > /dev/null 2>&1; then
+          # If the value is valid JSON, use it as-is
+          echo "GenericModule.$key=$value"
+        else
+          # Escape quotes and backslashes in the value
+          escaped_value=$(printf '%q' $value)
+          # If the value is not JSON, quote it and use the escaped version
+          echo "GenericModule.$key=\"$escaped_value\""
+        fi
+      done)
+      popd
+      run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" "${amp_args[@]}"
+    else
+      run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | consume_progress_bars
+    fi
     if ! does_main_instance_exist; then
       handle_error "Failed to create Main instance. Please check your configuration."
     fi
@@ -145,7 +171,7 @@ upgrade_instances() {
 }
 
 
-setup_template() {
+setup_amp_with_template() {
   [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 0
 
   # Dockerfolder containing instances
@@ -168,13 +194,15 @@ setup_template() {
   fi
 
   # change directory to the first subfolder of AMP (docker version should only have 1)
-  pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
+  #pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
   download_template
 
   create_merged_template
 
+  link_instance_files
+
   apply_template_to_instance
-  popd
+  #popd
 }
 
 download_template() {
@@ -209,11 +237,28 @@ create_merged_template() {
   return
 }
 
-apply_template_to_instance() {
+link_instance_files() {
   safe_link "${amptemplate}_merged.kvp" "GenericModule.kvp"
 
   safe_link "${amptemplate}config.json" "configmanifest.json"
 
   safe_link "${amptemplate}metaconfig.json" "metaconfig.json"
   return
+}
+
+apply_template_to_instance() {
+  amp_args=$(awk -F'=' 'NF == 2 && $2 != ""' "${amptemplate}_merged.kvp" | while IFS='=' read -r key value; do
+    # Determine if the value is valid JSON
+    if echo "$value" | jq empty > /dev/null 2>&1; then
+      # If the value is valid JSON, use it as-is
+      echo "GenericModule.$key=$value"
+    else
+      # Escape quotes and backslashes in the value
+      escaped_value=$(printf '%q' $value)
+      # If the value is not JSON, quote it and use the escaped version
+      echo "GenericModule.$key=\"$escaped_value\""
+    fi
+  done)
+  run_amp_command --ReconfigureInstance Main "${amp_args[@]}"
+  return  
 }
