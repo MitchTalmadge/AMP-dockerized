@@ -9,23 +9,18 @@ does_main_instance_exist() {
 }
 
 run_amp_command() {
-    # Get the command as a string and the rest as arguments
+    # Get the first argument as the main command
     local command="$1"
-    shift  # Remove the first argument from the list
+    shift  # Remove the first argument, leaving the rest
 
-    # Use an array to handle arguments
-    local args=("$@")  # Store all remaining arguments in an array
+    # Construct the command string with the main command
+    local cmd="ampinstmgr $command $@"
 
-    # Construct the command
-    local cmd="ampinstmgr $command"
+    # Print the command for debugging
+    echo "Executing command: su ${APP_USER} --command \"$cmd\""
 
-    # Append all arguments to the command, quoting them to preserve spaces
-    for arg in "${args[@]}"; do
-        cmd+=" \"$arg\""  # Quote each argument to preserve any spaces
-    done
-
-    # Execute the command with all arguments
-    su "${APP_USER}" --command "$cmd"
+    # Execute the command using su
+    su "${APP_USER}" --command "${cmd}"
 }
 
 run_amp_command_silently() {
