@@ -17,59 +17,7 @@ configure_main_instance() {
   echo "Checking Main instance existence..."
   if ! does_main_instance_exist; then
     echo "Creating Main instance... (This can take a while)"
-    
-    if [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ]; then
-      AMP_TEMPLATEREPO_OWNER="${AMP_TEMPLATEREPO_OWNER:-CubeCoders}"
-      AMP_TEMPLATEREPO_REPO="${AMP_TEMPLATEREPO_REPO:-AMPTemplates}"
-      AMP_TEMPLATEREPO_REF="${AMP_TEMPLATEREPO_REF:-HEAD}"
-
-      amptemplate="${AMP_TEMPLATE%.*}"
-
-      # Not needed to touch these variables (unless you know what you're doing)
-      if [ -z "${EXCLUDED_KVP+x}" ]; then
-        EXCLUDED_KVP=('AnalyticsPlugin.kvp' 'EmailSenderPlugin.kvp' 'FileManagerPlugin.kvp' 'GenericModule.kvp' 'LocalFileBackupPlugin.kvp' 'RCONPlugin.kvp' 'WebRequestPlugin.kvp' 'steamcmdplugin.kvp')
-      fi
-
-      if [ -z "${REQUIRED_FILES+x}" ]; then
-        REQUIRED_FILES=('${amptemplate}.kvp' '${amptemplate}config.json' '${amptemplate}metaconfig.json')
-      fi
-
-      if [ -d /home/amp/ampcache ]; then
-        pushd /home/amp/ampcache
-      else
-        pushd /tmp
-      fi
-
-      download_template
-      
-      create_merged_template
-      
-      mapfile -t key_value_pairs < <(awk -F'=' 'NF == 2 && $2 != ""' "${amptemplate}_merged.kvp")
-
-      # Initialize amp_args variable
-      amp_args=""
-
-      # Process each key-value pair
-      for line in "${key_value_pairs[@]}"; do
-          # Split the line into key and value
-          IFS='=' read -r key value <<< "$line"
-          # Determine if the value is valid JSON
-          if echo "$value" | jq empty > /dev/null 2>&1; then
-              # If the value is valid JSON, use it as-is
-              amp_args+="+GenericModule.$key=$value "
-          else
-              # Escape quotes and backslashes in the value
-              escaped_value=$(printf %s "$value" | sed 's/\\/\\\\/g; s/"/\\"/g')
-              # If the value is not JSON, quote it and use the escaped version
-              amp_args+="+GenericModule.$key=\\\"$escaped_value\\\" "
-          fi
-      done
-      popd
-      run_amp_command "CreateInstance" "${AMP_MODULE}" Main "${IPBINDING}" "${PORT}" "${AMP_LICENCE}" "${USERNAME}" "${PASSWORD}" "${amp_args}" | consume_progress_bars
-      #run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" "${amp_args[@]}"
-    else
-      run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | consume_progress_bars
-    fi
+    run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | consume_progress_bars
     if ! does_main_instance_exist; then
       handle_error "Failed to create Main instance. Please check your configuration."
     fi
@@ -196,8 +144,8 @@ upgrade_instances() {
   run_amp_command "UpgradeAll" | consume_progress_bars
 }
 
-setup_amp_with_template() {
-  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 0
+setup_template() {
+  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 1
 
   # Dockerfolder containing instances
   AMP_FOLDER="${AMP_FOLDER:-/home/amp/.ampdata/instances}"
@@ -218,33 +166,30 @@ setup_amp_with_template() {
     REQUIRED_FILES=('${amptemplate}.kvp' '${amptemplate}config.json' '${amptemplate}metaconfig.json')
   fi
 
-  # change directory to the first subfolder of AMP (docker version should only have 1)
-  #pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
-  #download_template
+  # TODO: move var processing to function
+
+  pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
+  download_templates
 
   create_merged_template
 
-  #link_instance_files
-
-  #apply_template_to_instance
-  #popd
+  apply_template_to_instance
+  popd
 }
 
-download_template() {
-  # Download template
+download_templates() {
+  # Download templates
+  # change directory to the first subfolder of AMP (docker version should only have 1)
   [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
   for required_file in "${REQUIRED_FILES[@]}"; do
       eval "curr_file=\"$required_file\""
-      [ ! -f $curr_file ] && get_from_github "${curr_file}" # TODO: add this to get_from_github
+      get_from_github ${curr_file}
       [ ! -f $curr_file ] && { echo "required file: '${curr_file}' not found"; exit 1; }
-      echo "Download done of ${curr_file}"
   done
-  return
 }
 
 create_merged_template() {
   # create an empty merged kvp
-  [ -f ${amptemplate}_merged.kvp ] && rm ${amptemplate}_merged.kvp
   touch ${amptemplate}_merged.kvp
   while IFS="=" read key value rest; do
       if [ -n "$rest" ]; then
@@ -252,39 +197,25 @@ create_merged_template() {
       fi
       if [[ $value =~ @IncludeJson\[([^\]]+)\] ]]; then
           jsonfile="${BASH_REMATCH[1]}"
-          [ ! -f $jsonfile ] && get_from_github "${jsonfile}" # TODO: add this to get_from_github
+          get_from_github ${jsonfile}
           [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
           value="$(jq -c '.' $jsonfile)"
-          echo "Jsonfile ${jsonfile} merged with the main template"
       fi
       echo "$key=$value" >> ${amptemplate}_merged.kvp
   done < "${amptemplate}.kvp"
   chown ${APP_USER}:${APP_GROUP} ${amptemplate}_merged.kvp
-  return
-}
-
-link_instance_files() {
-  safe_link "${amptemplate}_merged.kvp" "GenericModule.kvp"
-
-  safe_link "${amptemplate}config.json" "configmanifest.json"
-
-  safe_link "${amptemplate}metaconfig.json" "metaconfig.json"
-  return
 }
 
 apply_template_to_instance() {
-  amp_args=$(awk -F'=' 'NF == 2 && $2 != ""' "${amptemplate}_merged.kvp" | while IFS='=' read -r key value; do
-    # Determine if the value is valid JSON
-    if echo "$value" | jq empty > /dev/null 2>&1; then
-      # If the value is valid JSON, use it as-is
-      echo "GenericModule.$key=$value"
-    else
-      # Escape quotes and backslashes in the value
-      escaped_value=$(printf '%q' $value)
-      # If the value is not JSON, quote it and use the escaped version
-      echo "GenericModule.$key=\"$escaped_value\""
-    fi
-  done)
-  run_amp_command --ReconfigureInstance Main "${amp_args[@]}"
-  return  
+  # backup old GenericModule if it's not already done
+  [[ -L ./GenericModule.kvp ]] && rm ./GenericModule.kvp
+  [ -f ./GenericModule.kvp ] && mv ./GenericModule.kvp ./GenericModule_${amptemplate}_bak.kvp
+  # symbolic link the merged template
+  su ${APP_USER} -c "ln -s ${amptemplate}_merged.kvp GenericModule.kvp"
+  [[ -L ./configmanifest.json ]] && rm ./configmanifest.json
+  [ -f ./configmanifest.json ] && mv ./configmanifest.json ./configmanifest_${amptemplate}_bak.json
+  su ${APP_USER} -c "ln -s ${amptemplate}config.json configmanifest.json"
+  [[ -L ./metaconfig.json ]] && rm ./metaconfig.json
+  [ -f ./metaconfig.json ] && mv ./metaconfig.json ./metaconfig_${amptemplate}_bak.json
+  su ${APP_USER} -c "ln -s ${amptemplate}metaconfig.json metaconfig.json"
 }

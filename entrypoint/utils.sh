@@ -9,18 +9,7 @@ does_main_instance_exist() {
 }
 
 run_amp_command() {
-    # Get the first argument as the main command
-    local command="$1"
-    shift  # Remove the first argument, leaving the rest
-
-    # Construct the command string with the main command
-    local cmd="ampinstmgr $command $@"
-
-    # Print the command for debugging
-    echo "Executing command: su ${APP_USER} --command \"$cmd\""
-
-    # Execute the command using su
-    su "${APP_USER}" --command "${cmd}"
+  su ${APP_USER} --command "ampinstmgr $1"
 }
 
 run_amp_command_silently() {
@@ -41,21 +30,11 @@ get_from_github() {
   repo_name="${3:-${AMP_TEMPLATEREPO_REPO}}"
   repo_ref="${4:-${AMP_TEMPLATEREPO_REF}}"
 
-  [ ! -n "$repo_path" ] && { echo "No file given, aborting"; return; }
+  [ -n "$repo_path" ] && { echo "Now file given, aborting"; return; }
 
   su ${APP_USER} -c "
     curl \
       -H 'Accept: application/vnd.github.VERSION.raw' \
       https://api.github.com/repos/${repo_owner}/${repo_name}/contents/${repo_path}\?ref\=${repo_ref} -o ${repo_path}
   "
-}
-
-safe_link() {
-  source_file="$1"
-  target_file="${2:-${source_file}}"
-
-  [[ -L ./${target_file} ]] && rm ./${target_file}
-  [ -f ./${target_file} ] && mv ./${target_file} ./${target_file}.bak
-  # symbolic link the file
-  su ${APP_USER} -c "ln -s ${source_file} ${target_file}"
 }
