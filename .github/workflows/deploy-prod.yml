@@ -22,6 +22,8 @@ jobs:
     name: "Deploy"
     runs-on: ubuntu-latest
     needs: build
+    env:
+      DOCKERHUBMANIFEST: ${{ vars.DOCKERHUBMANIFEST }}
     steps:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v4
@@ -42,22 +44,22 @@ jobs:
           for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
             ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
-            TAG="${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_tag_name.outputs.TAG_NAME }}-${ARCH}"
+            TAG="$DOCKERHUBMANIFEST:${{ steps.get_tag_name.outputs.TAG_NAME }}-${ARCH}"
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
           done
           echo "TAGS=${TAGS}" >> $GITHUB_OUTPUT
           docker image ls -a
       - name: "Login to Docker Hub"
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
-        run: docker image push --all-tags ${{ vars.DOCKERHUBMANIFEST }}
+        run: docker image push --all-tags $DOCKERHUBMANIFEST
       - name: "Deploy Multi-Arch Manifests"
         run: |
-          MANIFESTS="${{ vars.DOCKERHUBMANIFEST }}:latest ${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_tag_name.outputs.TAG_NAME }}"
+          MANIFESTS="$DOCKERHUBMANIFEST:latest $DOCKERHUBMANIFEST:${{ steps.get_tag_name.outputs.TAG_NAME }}"
           for m in ${MANIFESTS}; do
             docker manifest create ${m} ${{ steps.load_images.outputs.TAGS }}
             docker manifest push ${m}

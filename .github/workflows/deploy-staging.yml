@@ -21,6 +21,8 @@ jobs:
     name: "Deploy Staging"
     runs-on: ubuntu-latest
     needs: build
+    env:
+      DOCKERHUBMANIFEST: ${{ vars.DOCKERHUBMANIFEST }}
     steps:
       - name: "Download Docker Image Artifacts"
         uses: actions/download-artifact@v4
@@ -36,7 +38,7 @@ jobs:
           for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
             ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
-            TAG="${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
+            TAG="$DOCKERHUBMANIFEST:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
           done
@@ -48,9 +50,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
-        run: docker image push --all-tags ${{ vars.DOCKERHUBMANIFEST }}
+        run: docker image push --all-tags $DOCKERHUBMANIFEST
       - name: "Deploy Multi-Arch Manifest"
         run: |
-          MANIFEST="${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
+          MANIFEST="$DOCKERHUBMANIFEST:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
           docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
           docker manifest push ${MANIFEST}
