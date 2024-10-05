@@ -145,10 +145,12 @@ upgrade_instances() {
 }
 
 setup_template() {
-  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 1
-
+  [ "$MODULE" == "Generic" ] && [ -n "$AMP_TEMPLATE" ] || return 0
   # Dockerfolder containing instances
-  AMP_FOLDER="${AMP_FOLDER:-/home/amp/.ampdata/instances}"
+  AMP_FOLDER="${AMP_FOLDER:-$(find /home/amp/.ampdata/instances -maxdepth 1 -name "*" -type d | awk 'NR==2')}"
+
+  AMP_CONFIG="${AMP_CONFIG:-AMPConfig.conf}"
+  AMP_IPBINDING="${AMP_IPBINDING:-0.0.0.0}"
 
   # AMP's template repo details, note if you're not logged into github you'll eventually hit a rate limit.. be aware of this (I probably should add a check for that)
   AMP_TEMPLATEREPO_OWNER="${AMP_TEMPLATEREPO_OWNER:-CubeCoders}"
@@ -166,56 +168,107 @@ setup_template() {
     REQUIRED_FILES=('${amptemplate}.kvp' '${amptemplate}config.json' '${amptemplate}metaconfig.json')
   fi
 
-  # TODO: move var processing to function
-
-  pushd "$(find $AMP_FOLDER -maxdepth 1 -name "*" -type d | awk 'NR==2')"
+  if [ -d /home/amp/ampcache ]; then
+    pushd /home/amp/ampcache
+  else
+    pushd /tmp
+  fi
   download_templates
 
-  create_merged_template
+  INSTANCE_PORTS=""
+  INSTANCE_ENDPOINTURIFORMAT=""
+  INSTANCE_ENDPOINTPORTREF=""
 
+  create_merged_template
+  
   apply_template_to_instance
+
+  update_instance_config
   popd
 }
 
 download_templates() {
   # Download templates
-  # change directory to the first subfolder of AMP (docker version should only have 1)
   [[ " ${EXCLUDED_KVP[*]} " =~ [[:space:]]${amptemplate}.kvp[[:space:]] ]] && { echo "Trying to install the template ${amptemplate}, but this one of the core templates."; exit 1; }
   for required_file in "${REQUIRED_FILES[@]}"; do
       eval "curr_file=\"$required_file\""
-      get_from_github ${curr_file}
+      [ ! -f $curr_file ] && get_from_github "${curr_file}"
       [ ! -f $curr_file ] && { echo "required file: '${curr_file}' not found"; exit 1; }
   done
+  return 0
 }
 
 create_merged_template() {
   # create an empty merged kvp
+  [ -f ${amptemplate}_merged.kvp ] && rm ${amptemplate}_merged.kvp
   touch ${amptemplate}_merged.kvp
-  while IFS="=" read key value rest; do
-      if [ -n "$rest" ]; then
-          value="$value=$rest"
-      fi
-      if [[ $value =~ @IncludeJson\[([^\]]+)\] ]]; then
-          jsonfile="${BASH_REMATCH[1]}"
-          get_from_github ${jsonfile}
-          [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
-          value="$(jq -c '.' $jsonfile)"
-      fi
-      echo "$key=$value" >> ${amptemplate}_merged.kvp
+  
+  while IFS= read -r line; do
+    key=""
+    value=""
+    if [[ $line =~ ^([^=]+)=(.+)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      value=$(printf '%s' "${BASH_REMATCH[2]}")
+    else
+      continue
+    fi
+
+    if [[ $value =~ @IncludeJson\[([^\]]+)\] ]]; then
+        jsonfile="${BASH_REMATCH[1]}"
+        [ ! -f $jsonfile ] && get_from_github "${jsonfile}"
+        [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
+        # TODO: replace Protocol: TCP(0)/UDP(1)/BOTH(2)
+        value="$(jq -c '.' $jsonfile)"
+    fi
+    # TODO: replace with case
+    [ $key == "App.PrimaryApplicationPortRef" ] && INSTANCE_ENDPOINTPORTREF=$value
+    [ $key == "App.ApplicationIPBinding" ] && AMP_IPBINDING=$value
+    [ $key == "App.Ports" ] && INSTANCE_PORTS=$value
+    [ $key == "Meta.EndpointURIFormat" ] && INSTANCE_ENDPOINTURIFORMAT=$value
+    echo "$key=$value" >> ${amptemplate}_merged.kvp
   done < "${amptemplate}.kvp"
   chown ${APP_USER}:${APP_GROUP} ${amptemplate}_merged.kvp
 }
 
 apply_template_to_instance() {
-  # backup old GenericModule if it's not already done
-  [[ -L ./GenericModule.kvp ]] && rm ./GenericModule.kvp
-  [ -f ./GenericModule.kvp ] && mv ./GenericModule.kvp ./GenericModule_${amptemplate}_bak.kvp
-  # symbolic link the merged template
-  su ${APP_USER} -c "ln -s ${amptemplate}_merged.kvp GenericModule.kvp"
-  [[ -L ./configmanifest.json ]] && rm ./configmanifest.json
-  [ -f ./configmanifest.json ] && mv ./configmanifest.json ./configmanifest_${amptemplate}_bak.json
-  su ${APP_USER} -c "ln -s ${amptemplate}config.json configmanifest.json"
-  [[ -L ./metaconfig.json ]] && rm ./metaconfig.json
-  [ -f ./metaconfig.json ] && mv ./metaconfig.json ./metaconfig_${amptemplate}_bak.json
-  su ${APP_USER} -c "ln -s ${amptemplate}metaconfig.json metaconfig.json"
+  safe_link "${amptemplate}_merged.kvp" "${AMP_FOLDER}/GenericModule.kvp"
+
+  safe_link "${amptemplate}config.json" "${AMP_FOLDER}/configmanifest.json"
+
+  safe_link "${amptemplate}metaconfig.json" "${AMP_FOLDER}/metaconfig.json"
+}
+
+update_instance_config() {
+  pushd ${AMP_FOLDER}
+
+  # Create updated AMPConfig
+  exec 3> ${AMP_CONFIG}.updated
+  while IFS= read -r line; do
+    key=""
+    value=""
+    if [[ $line =~ ^([^=]+)=(.*)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      value=$(printf '%s' "${BASH_REMATCH[2]}")
+    else
+      printf '%s\n' "$line" >&3
+      continue
+    fi
+
+    case "$key" in
+      "Monitoring.MonitorPorts")
+        printf "%s=%s\n" "$key" "${INSTANCE_PORTS}" >&3
+        ;;
+      "AMP.PrimaryEndpoint")
+        printf "%s=%s:%d\n" "$key" "${AMP_IPBINDING}" ${endpointport} >&3
+        ;;
+      "AMP.PrimaryEndpointUri")
+        printf "%s=%s\n" "$key" "${updated_uri}" >&3
+        ;;
+      *)
+        printf "%s=%s\n" "$key" "$value" >&3
+        ;;
+    esac
+  done < ${AMP_CONFIG}
+  exec 3>&-
+  popd
 }

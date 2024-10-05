@@ -30,11 +30,21 @@ get_from_github() {
   repo_name="${3:-${AMP_TEMPLATEREPO_REPO}}"
   repo_ref="${4:-${AMP_TEMPLATEREPO_REF}}"
 
-  [ -n "$repo_path" ] && { echo "Now file given, aborting"; return; }
+  [ ! -n "$repo_path" ] && { echo "No file given, aborting"; return; }
 
   su ${APP_USER} -c "
     curl \
       -H 'Accept: application/vnd.github.VERSION.raw' \
       https://api.github.com/repos/${repo_owner}/${repo_name}/contents/${repo_path}\?ref\=${repo_ref} -o ${repo_path}
   "
+}
+
+safe_link() {
+  source_file="$1"
+  target_file="${2:-${source_file}}"
+
+  [[ -L ${target_file} ]] && rm ${target_file}
+  [ -f ${target_file} ] && mv ${target_file} ${target_file}.bak
+  # symbolic link the file
+  su ${APP_USER} -c "ln -s $(pwd)/$(basename $source_file) ${target_file}"
 }
