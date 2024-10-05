@@ -28,6 +28,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: /tmp
+          pattern: image-*
       - name: "Get Branch Name"
         id: get_branch_name
         run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/})" >> $GITHUB_OUTPUT
