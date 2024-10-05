@@ -181,9 +181,9 @@ setup_template() {
 
   create_merged_template
   
-  apply_template_to_instance
-
   update_instance_config
+
+  apply_template_to_instance
   popd
 }
 
@@ -217,14 +217,24 @@ create_merged_template() {
         jsonfile="${BASH_REMATCH[1]}"
         [ ! -f $jsonfile ] && get_from_github "${jsonfile}"
         [ ! -f $jsonfile ] && { echo "required file: '${jsonfile}' not found"; exit 1; }
-        # TODO: replace Protocol: TCP(0)/UDP(1)/BOTH(2)
-        value="$(jq -c '.' $jsonfile)"
+        value="$(jq -c 'map(if .Protocol == "TCP" then .Protocol = 0 elif .Protocol == "UDP" then .Protocol = 1 elif .Protocol == "BOTH" then .Protocol = 2 else . end)' $jsonfile)"
     fi
-    # TODO: replace with case
-    [ $key == "App.PrimaryApplicationPortRef" ] && INSTANCE_ENDPOINTPORTREF=$value
-    [ $key == "App.ApplicationIPBinding" ] && AMP_IPBINDING=$value
-    [ $key == "App.Ports" ] && INSTANCE_PORTS=$value
-    [ $key == "Meta.EndpointURIFormat" ] && INSTANCE_ENDPOINTURIFORMAT=$value
+
+    case $key in
+        "App.PrimaryApplicationPortRef")
+            INSTANCE_ENDPOINTPORTREF=$value
+            ;;
+        "App.ApplicationIPBinding")
+            AMP_IPBINDING=$value
+            ;;
+        "App.Ports")
+            INSTANCE_PORTS=$value
+            ;;
+        "Meta.EndpointURIFormat")
+            INSTANCE_ENDPOINTURIFORMAT=$value
+            ;;
+    esac
+
     echo "$key=$value" >> ${amptemplate}_merged.kvp
   done < "${amptemplate}.kvp"
   chown ${APP_USER}:${APP_GROUP} ${amptemplate}_merged.kvp
@@ -236,13 +246,15 @@ apply_template_to_instance() {
   safe_link "${amptemplate}config.json" "${AMP_FOLDER}/configmanifest.json"
 
   safe_link "${amptemplate}metaconfig.json" "${AMP_FOLDER}/metaconfig.json"
+
+  safe_link "${amptemplate}${AMP_CONFIG}" "${AMP_FOLDER}/${AMP_CONFIG}"
 }
 
 update_instance_config() {
-  pushd ${AMP_FOLDER}
-
+  endpointport=$(echo "$INSTANCE_PORTS" | jq --arg ref "$INSTANCE_ENDPOINTPORTREF" '.[] | select(.Ref == $ref) | .Port')
+  endpointuri=$(printf '%s:%d' "${AMP_IPBINDING}" ${endpointport})
   # Create updated AMPConfig
-  exec 3> ${AMP_CONFIG}.updated
+  exec 3> "${amptemplate}${AMP_CONFIG}"
   while IFS= read -r line; do
     key=""
     value=""
@@ -259,16 +271,17 @@ update_instance_config() {
         printf "%s=%s\n" "$key" "${INSTANCE_PORTS}" >&3
         ;;
       "AMP.PrimaryEndpoint")
-        printf "%s=%s:%d\n" "$key" "${AMP_IPBINDING}" ${endpointport} >&3
+        printf "%s=%s\n" "$key" "${endpointuri}" >&3
         ;;
       "AMP.PrimaryEndpointUri")
+        updated_uri=$(echo "$INSTANCE_ENDPOINTURIFORMAT" | sed "s/{[0-9]\+}/$endpointuri/")
         printf "%s=%s\n" "$key" "${updated_uri}" >&3
         ;;
       *)
         printf "%s=%s\n" "$key" "$value" >&3
         ;;
     esac
-  done < ${AMP_CONFIG}
+  done < ${AMP_FOLDER}/${AMP_CONFIG}
   exec 3>&-
-  popd
+  chown ${APP_USER}:${APP_GROUP} "${amptemplate}${AMP_CONFIG}"
 }
