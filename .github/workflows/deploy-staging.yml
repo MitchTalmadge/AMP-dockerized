@@ -36,7 +36,7 @@ jobs:
           for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
             ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
-            TAG="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
+            TAG="${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
             TAGS="${TAGS} ${TAG}"
             docker tag amp-dockerized:latest ${TAG}
           done
@@ -48,9 +48,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
-        run: docker image push --all-tags mitchtalmadge/amp-dockerized
+        run: docker image push --all-tags ${{ vars.DOCKERHUBMANIFEST }}
       - name: "Deploy Multi-Arch Manifest"
         run: |
-          MANIFEST="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
+          MANIFEST="${{ vars.DOCKERHUBMANIFEST }}:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
           docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
           docker manifest push ${MANIFEST}
