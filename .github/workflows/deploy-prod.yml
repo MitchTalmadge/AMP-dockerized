@@ -35,8 +35,12 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.tag }}" != "" ]]; then
             echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
-          else
+          elif [[ "$GITHUB_REF" == refs/tags/* ]]; then
             echo "TAG_NAME=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_OUTPUT
+          else
+            # Generate a random ID if there are no tags, using a short UUID
+            TAG_NAME=$(uuidgen | cut -c1-8)
+            echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
           fi
       - name: "Load Docker Images"
         id: load_images
