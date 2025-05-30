@@ -76,9 +76,18 @@ The instructions to do so are as follows:
   - For `docker run`, use the following flag: (Substitute your generated MAC)
   
     `--mac-address="02:42:AC:XX:XX:XX"`
-  - For Docker Compose, use the following key next to `image`:
+  - For Docker Compose, you need to add a `networks` section like so:
   
-    `mac_address: 02:42:AC:XX:XX:XX`
+    ```yaml
+    # Your config may look a little different -- focus on the networks section
+    services:
+      amp:
+        image: mitchtalmadge/amp-dockerized
+        networks:
+          default:
+            mac_address: 02:42:AC:XX:XX:XX
+        ...
+    ```
     
 If you have a unique network situation, a random MAC may not work for you. In that case you will need
 to come up with your own solution to prevent address conflicts.
@@ -117,9 +126,17 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 | `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
 
 **Important Details:**
-- _Americans:_ This is spelled licenCe not licenSe. Got me a few times.
+- 🇺🇸Americans🇺🇸: This is spelled licen**C**e not licen**S**e. Got me a few times 😂
 - When a McMyAdmin licence is provided, the one and only instance will be a Minecraft instance. This cannot be overridden;
- you must buy a new license to use AMP with other/multiple games.
+ you must buy a new licence to use AMP with other/multiple games.
+
+### Auto-Update
+| Name              | Description                                                                                     | Default Value |
+|-------------------|-------------------------------------------------------------------------------------------------|---------------|
+| `AMP_AUTO_UPDATE` | Set to `false` if you would not like AMP to automatically update when you reboot the container. | `true`        |
+
+By default, AMP will automatically update itself to the latest version when the container is started or restarted. 
+If you prefer to manage updates manually, set this variable to `false` and you can still update AMP from the web UI.
 
 ### Module
 
@@ -127,7 +144,7 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 |--------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|---------------|
 | `AMP_MODULE` | Which Module to use for the Main instance created by this image (note: changing this value will have no effect after the Main instance is created). | `ADS`         |
 
-To run multiple game servers under this image, use the default value of `ADS` (Application Deployment Service) which allows you to create various modules from the web ui.
+To run multiple game servers under this image, use the default value of `ADS` (Application Deployment Service) which allows you to create various modules from the web UI.
 
 To be clear, this Docker image creates ONE instance by default. If you want to create more, use `ADS` as the first
   instance, and create the rest with the web UI. Otherwise, you can pick any other module from the list.
@@ -210,15 +227,6 @@ and when it tells you to access `/home/AMP/.ampdata`, access the volume you mapp
 To restart the AMP instances, just restart the Docker container.
 
 Or, just put [CloudFlare](https://www.cloudflare.com/) and its free SSL cert in front of your web UI and save yourself hours of pain.
-
-# Upgrading AMP
-To upgrade, just restart your container! On startup, the container will check for updates and install them if they are available.
-
-You can also just use the update button within the UI. It may take a little while longer to boot than the UI predicts.
-
-| Name              | Description                                                                                     | Default Value |
-|-------------------|-------------------------------------------------------------------------------------------------|---------------|
-| `AMP_AUTO_UPDATE` | Set to `false` if you would not like AMP to automatically update when you reboot the container. | `true`        |
 
 # Contributing
 
