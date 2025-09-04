@@ -1,4 +1,4 @@
-FROM debian:12-slim
+FROM debian:12.11-slim
  
 ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
