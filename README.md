@@ -1,6 +1,6 @@
 > [!CAUTION]
 > **This is a community-made unofficial image, and is NOT endorsed by CubeCoders.**
-> **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
+> **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will understandably tell you that you are on your own.**
 > 
 > This project is community driven by people who have full time responsibilities elsewhere. You should be able to navigate Docker, Linux, bash, etc. and feel comfortable debugging containers on your own if you intend to use this image. I will help if I get time, but I have a full time job and family that I want to hang out with.
 >
