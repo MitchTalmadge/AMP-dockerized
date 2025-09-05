@@ -29,7 +29,7 @@ If you have coding skills and find this repository useful, please consider helpi
 > [!WARNING]
 > **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
 
-## Unraid
+## Unraid Support
 If you are using Unraid, you may want to check out the [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums.
 
 This image works great on Unraid and I even bought the software just to make sure it worked (and now I use Unraid for all sorts of things!)
@@ -59,7 +59,7 @@ If you are *not* able to get a game working, make an issue and we can work toget
 
 # Configuration
 
-I recommend using Docker Compose to set up the image. [Sample configurations may be found here](./example-configs).
+I recommend using Unraid or Docker Compose to set up the image. [Sample Docker Compose configurations may be found here](./example-configs).
 
 ## MAC Address (Required! Please read!)
 > [!CAUTION]
