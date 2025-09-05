@@ -7,7 +7,7 @@ check_file_permissions() {
 
 check_licence() {
   echo "Checking licence..."
-  if [ ${AMP_LICENCE} = "notset" ]; then
+  if [ "${AMP_LICENCE}" = "notset" ]; then
     handle_error "AMP_LICENCE is not set. You need to have a valid AMP licence from cubecoders.com specified in the AMP_LICENCE environment variable"
   fi
   # TODO: Find a way to test the licence validity
