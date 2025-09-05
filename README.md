@@ -1,19 +1,19 @@
 > [!CAUTION]
 > **This is a community-made unofficial image, and is NOT endorsed by CubeCoders.**
-> **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
+> **Please DO NOT ask CubeCoders for support if you use this image. They do not support nor endorse this image and will understandably tell you that you are on your own.**
 > 
-> This project is community driven by people who have full time responsibilities elsewhere. You should be able to navigate Docker, Linux, bash, etc. and feel comfortable debugging containers on your own if you intend to use this image. I will help if I get time, but I have a full time job and family that I want to hang out with.
+> This project is community driven by people who have full time responsibilities elsewhere. You should be able to navigate Docker, Linux, bash, etc. and feel comfortable debugging containers on your own if you intend to use this image. I will help if I get time, but I have a full time job and some family and kitty cats that I want to hang out with! 😸
 >
 > That said, if you have time and are able to help, please feel free! I love PRs!
 
 > [!NOTE]  
-> A lack of commits & releases does not mean this project is dead. The image is configured by default to auto-update AMP on startup, meaning that new image releases are often not necessary.
+> A lack of commits & releases does not mean this project is dead. This image is effectively an "operating system" for AMP to run on. AMP itself can be updated through its web UI at any time. Infrequently, we may need to push a new image update to support a new version of AMP.
 
 # AMP-dockerized
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
-In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP#buyAMP) to use this image.
+In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use this image.
 
 > [!WARNING]
 > **This is a community-made unofficial image, and is not endorsed by CubeCoders.**
@@ -30,7 +30,11 @@ If you have coding skills and find this repository useful, please consider helpi
 > **Please DO NOT ask CubeCoders for support. They do not support nor endorse this image and will tell you that you are on your own.**
 
 ## Unraid
-If you are using Unraid, there is a [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums. I do not officially support Unraid but I'll try to help if I have time.
+If you are using Unraid, you may want to check out the [support topic](https://forums.unraid.net/topic/98290-support-amp-application-management-panel-corneliousjd-repo/) on their forums.
+
+This image works great on Unraid and I even bought the software just to make sure it worked (and now I use Unraid for all sorts of things!)
+
+I will try to help out where I am able.
  
 # Supported Game Servers
 
@@ -57,26 +61,24 @@ If you are *not* able to get a game working, make an issue and we can work toget
 
 I recommend using Docker Compose to set up the image. [Sample configurations may be found here](./example-configs).
 
-## MAC Address (Important! Please read.)
-AMP is designed to detect hardware changes and will de-activate all instances when something significant changes. 
-This is to stop people from sharing pre-activated instances and bypassing the licencing server. One way of detecting
-changes is to look at the MAC address of the host's network card. A change here will de-activate instances.
+## MAC Address (Required! Please read!)
+> [!CAUTION]
+> You must follow these instructions or AMP will be de-activated every time it boots!
 
-By default, Docker assigns a new MAC address to a container every time it is restarted. Therefore, unless you want to
-painstakingly re-activate all your instances on every server reboot, you need to assign a permanent MAC address.
+AMP is designed to detect hardware changes and will de-activate all instances when something significant changes. By default, Docker assigns a new MAC address to a container every time it is restarted, which is detected as a significant change, and triggers a licence key reset. Therefore, unless you want to painstakingly re-activate all your instances on every server reboot, you need to assign a permanent MAC address.
 
 For most people, this can be accomplished by generating a random MAC address in Docker's acceptable range.
 The instructions to do so are as follows:
 
-- Visit this page: https://miniwebtool.com/mac-address-generator/
-- Put `02:42:AC` in as the prefix
-- Choose the format with colons `:`
-- Generate
-- Copy the generated MAC and use it when starting the container.
-  - For `docker run`, use the following flag: (Substitute your generated MAC)
+1. Visit this page: https://miniwebtool.com/mac-address-generator/
+2. Put `02:42:AC` in as the prefix
+3. Choose the format with colons `:`
+4. Generate
+5. Copy the generated MAC and use it when starting the container.
+   - For `docker run`, use the following flag: (Substitute your generated MAC)
   
     `--mac-address="02:42:AC:XX:XX:XX"`
-  - For Docker Compose, you need to add a `networks` section like so:
+   - For Docker Compose, you need to add a `networks` section like so:
   
     ```yaml
     # Your config may look a little different -- focus on the networks section
@@ -112,7 +114,8 @@ Here's a rough list of default ports for the various game servers. AMP also expo
 | `StarBound` | TCP 21025 ([Guide](https://starbounder.org/Guide:Setting_Up_Multiplayer))                                                                                                                      |
 | `Valheim`   | UDP 5678 → 5680                                                                                                                                                                                |
 
-Just a quick note about ports: some games use TCP, some games use UDP. Make sure you are using the right protocol. Don't fall into the trap of accidentally mapping a TCP port for a UDP game -- you won't be able to connect. 
+> [!IMPORTANT]
+> Make sure you are using the right protocol. If you accidentally map a TCP port for a UDP game, you won't be able to connect! 
 
 ## Environment Variables
 
@@ -122,17 +125,8 @@ Just a quick note about ports: some games use TCP, some games use UDP. Make sure
 |---------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
 
-**Important Details:**
-- 🇺🇸Americans🇺🇸: This is spelled licen**C**e not licen**S**e. Got me a few times 😂
-- When a McMyAdmin licence is provided, the one and only instance will be a Minecraft instance. This cannot be overridden;
- you must buy a new licence to use AMP with other/multiple games.
-
-### Auto-Update
-| Name              | Description                                                                                     | Default Value |
-|-------------------|-------------------------------------------------------------------------------------------------|---------------|
-| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `false`       |
-
-By default, you can update AMP using the web UI. AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. However, if you would like AMP to automatically update when this container reboots, you can set `AMP_AUTO_UPDATE` to `true`.
+> [!NOTE]
+> Legacy McMyAdmin licenses will automatically install Minecraft, and cannot install other games. (If you don't know what McMyAdmin is, this doesn't apply to you). 
 
 ### User/Group
 
@@ -159,21 +153,26 @@ Example: `TZ=America/Denver`
 | `USERNAME` | The username of the admin user created on first boot.                                                                                                   | `admin`       |
 | `PASSWORD` | The password of the admin user. This value is only used when creating the new user. If you use the default value, please change it after first sign-in. | `password`    |
 
+### Auto-Update
+| Name              | Description                                                                                     | Default Value |
+|-------------------|-------------------------------------------------------------------------------------------------|---------------|
+| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `false`       |
+
+By default, you can update AMP using the web UI. AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. However, if you would like AMP to automatically update when this container reboots, you can set `AMP_AUTO_UPDATE` to `true`.
+
 ## Volumes
+
+> [!CAUTION]
+> If you do not set up a volume as described, your game data will be wiped every time the container updates.
 
 | Mount Point  | Description                                                                                                                                                                                                                  |
 |--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `/home/amp/` | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game & save files, the web UI sign-in info, etc. Without creating this volume, AMP would be wiped on every boot. |
 
-## HTTPS / SSL / TLS
-
-Please take a look at [CubeCoder's official guide for HTTPS setup](https://discourse.cubecoders.com/t/setting-up-secure-http-https-with-amp/2305).
-
-Personally, I just used [CloudFlare's free SSL feature](https://www.cloudflare.com/application-services/products/ssl/), but this is really an advanced topic that depends heavily on your setup.
+# Advanced Configuration
+Please see the [advanced configuration wiki page](https://github.com/MitchTalmadge/AMP-dockerized/wiki/Advanced-Configuration) for more that you can do with this container.
 
 # Contributing
 
 I welcome contributors! Just open an issue first, or post in one of the contibution welcome / help wanted issues, so that we can discuss before you start coding. Thank you for helping!! 
 
-# Advanced Configuration
-Please see the [advanced configuration wiki page](https://github.com/MitchTalmadge/AMP-dockerized/wiki/Advanced-Configuration) for more that you can do with this container.
