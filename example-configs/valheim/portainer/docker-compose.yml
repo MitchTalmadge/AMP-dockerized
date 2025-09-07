@@ -1,20 +1,21 @@
-# This has minor adjustments to get working on a Portaienr cluster
----
-version: "3.6" # this must be 3.6
+# This has minor adjustments to get working on a Portainer cluster
+
 services:
   amp:
-    image: mitchtalmadge/amp-dockerized:latest
-    mac_address: 02:42:AC:XX:XX:XX #generated
     container_name: amp
+    image: mitchtalmadge/amp-dockerized:latest
+    networks:
+      default:
+        mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
+    ports:
+      - 5678-5680:5678-5680/udp # Game Server.
+      - 8080:8080 # Web Server
+    volumes:
+      - /etc/amp/:/home/amp/.ampdata # needs to be ownable by portainer uid
     environment:
       - UID=1000 # change to your portainer uid
       - GID=1000 # change to your portainer gid
-      - TZ=Etc/UTC
+      - TZ=Etc/UTC # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
       - LICENCE=<licence key>
       - MODULE=ADS # only tested with ADS
-    volumes:
-      - /etc/amp/:/home/amp/.ampdata # needs to be ownable by portainer uid
-    ports:
-      - 8080:8080
-      - 5678-5680:5678-5680/udp # valheim - amp defaults to 2456-2458
     restart: unless-stopped

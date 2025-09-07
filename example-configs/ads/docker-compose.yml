@@ -1,11 +1,12 @@
 # This configuration creates one ADS instance, which can be used to create multiple "child" instances.
 # This is a good choice if you want to run multiple game servers, even of different types.
-version: "3"
 services:
   amp:
     container_name: amp
     image: mitchtalmadge/amp-dockerized:latest
-    mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
+    networks:
+      default:
+        mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
     ports:
       - 8080:8080
       - 25565:25565 # Example port for Minecraft Java server.
