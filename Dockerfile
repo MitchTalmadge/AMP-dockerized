@@ -56,13 +56,6 @@ ENV LC_ALL en_US.UTF-8
 
 # Install Mono
 RUN apt-get update && \
-    apt-get install -y \
-    dirmngr \
-    ca-certificates \
-    gnupg && \
-    gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/debian stable-buster main" | tee /etc/apt/sources.list.d/mono-official-stable.list && \
-    apt-get update && \
     apt-get install -y mono-devel && \
     apt-get -y clean && \
     apt-get -y autoremove --purge && \
@@ -94,7 +87,6 @@ ARG AMPDEPS="\
     locales \
     numactl \
     procps \
-    software-properties-common \
     socat \
     tmux \
     unzip \
@@ -108,10 +100,10 @@ ARG SRCDSDEPS="\
     libbz2-1.0:i386 \
     libcurl3-gnutls:i386 \
     libcurl4 \
-    libncurses5:i386 \
+    libncurses6:i386 \
     libsdl2-2.0-0 \
     libsdl2-2.0-0:i386 \
-    libtinfo5:i386"
+    libtinfo6:i386"
 
 # Needed for games that require Wine and Xvfb
 ARG WINEXVFB="\
@@ -162,16 +154,16 @@ RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee
 # so we can't use apt to install ampinstmgr.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    software-properties-common \
     dirmngr \
-    apt-transport-https
+    apt-transport-https \
+    gnupg
 
 # Add CubeCoders repository and key
 RUN wget -qO - http://repo.cubecoders.com/archive.key | gpg --dearmor > /etc/apt/trusted.gpg.d/cubecoders-archive-keyring.gpg && \
     if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        apt-add-repository "deb http://repo.cubecoders.com/aarch64 debian/"; \
+        echo "deb http://repo.cubecoders.com/aarch64 debian/" > /etc/apt/sources.list.d/cubecoders.list; \
     else \
-        apt-add-repository "deb http://repo.cubecoders.com/ debian/"; \
+        echo "deb http://repo.cubecoders.com/ debian/" > /etc/apt/sources.list.d/cubecoders.list; \
     fi && \
     apt-get update && \
     # Just download (don't actually install) ampinstmgr

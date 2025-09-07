@@ -19,7 +19,7 @@ trap 'handle_error' ERR
 trap_with_arg 'shutdown' INT TERM HUP QUIT KILL 
 
 # Migrate legacy vars
-export AMP_LICENCE=${LICENCE:-${AMP_LICENCE:-"notset"}}
+export AMP_LICENCE=${LICENCE:-${AMP_LICENCE:-${AMP_LICENSE:-"notset"}}}
 export AMP_MODULE=${MODULE:-${AMP_MODULE:-"ADS"}}
 if [ ! -z "${NIGHTLY}" ]; then
   export AMP_RELEASE_STREAM="Development"
@@ -39,7 +39,7 @@ configure_main_instance
 
 configure_release_stream
 
-if [ ${AMP_AUTO_UPDATE} = "true" ]; then
+if [ "${AMP_AUTO_UPDATE}" = "true" ]; then
   upgrade_instances
 else
   echo "Skipping automatic updates."
