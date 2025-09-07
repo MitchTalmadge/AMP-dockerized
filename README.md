@@ -124,9 +124,10 @@ Here's a rough list of default ports for the various game servers. AMP also expo
 | Name          | Description                                                                                                              | Default Value                                         |
 |---------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
+| `AMP_LICENSE` | Alternative spelling for the licence key. Same as `AMP_LICENCE` above.                                                   | No Default. AMP will not boot without a real licence. |
 
 > [!NOTE]
-> Make sure it's spelled the U.K. English way: "licenCe" not "licenSe"
+> Both `AMP_LICENCE` (U.K. English spelling) and `AMP_LICENSE` (U.S. English spelling) are now supported as environment variables for the license key.
 > Legacy McMyAdmin licenses will automatically install Minecraft, and cannot install other games. (If you don't know what McMyAdmin is, this doesn't apply to you). 
 
 ### User/Group
