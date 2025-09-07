@@ -124,10 +124,8 @@ Here's a rough list of default ports for the various game servers. AMP also expo
 | Name          | Description                                                                                                              | Default Value                                         |
 |---------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
-| `AMP_LICENSE` | Alternative spelling for the licence key. Same as `AMP_LICENCE` above.                                                   | No Default. AMP will not boot without a real licence. |
 
 > [!NOTE]
-> Both `AMP_LICENCE` (U.K. English spelling) and `AMP_LICENSE` (U.S. English spelling) are now supported as environment variables for the license key.
 > Legacy McMyAdmin licenses will automatically install Minecraft, and cannot install other games. (If you don't know what McMyAdmin is, this doesn't apply to you). 
 
 ### User/Group
@@ -158,9 +156,9 @@ Example: `TZ=America/Denver`
 ### Auto-Update
 | Name              | Description                                                                                     | Default Value |
 |-------------------|-------------------------------------------------------------------------------------------------|---------------|
-| `AMP_AUTO_UPDATE` | Whether to update AMP automatically when you reboot the container. | `true`       |
+| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `false`       |
 
-By default, you can update AMP using the web UI, or by restarting the container (if `AMP_AUTO_UPDATE` is left untouched or set to `true`). AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly.
+By default, you can update AMP using the web UI. AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. However, if you would like AMP to automatically update when this container reboots, you can set `AMP_AUTO_UPDATE` to `true`.
 
 ## Volumes
 

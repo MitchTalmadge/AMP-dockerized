@@ -39,7 +39,7 @@ configure_main_instance
 
 configure_release_stream
 
-if [ ${AMP_AUTO_UPDATE} = "true" ]; then
+if [ "${AMP_AUTO_UPDATE}" = "true" ]; then
   upgrade_instances
 else
   echo "Skipping automatic updates."
