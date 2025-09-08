@@ -168,7 +168,7 @@ By default, you can update AMP using the web UI, or by restarting the container 
 
 | Mount Point  | Description                                                                                                                                                                                                                  |
 |--------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `/home/amp/` | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game & save files, the web UI sign-in info, etc. Without creating this volume, AMP would be wiped on every boot. |
+| `/home/amp/.ampdata` | **Required!** This volume contains everything AMP needs to run. This includes all your instances, all their game & save files, the web UI sign-in info, etc. Without creating this volume, AMP would be wiped on every boot. |
 
 # Advanced Configuration
 Please see the [advanced configuration wiki page](https://github.com/MitchTalmadge/AMP-dockerized/wiki/Advanced-Configuration) for more that you can do with this container.
