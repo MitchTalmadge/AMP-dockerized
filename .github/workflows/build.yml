@@ -17,7 +17,7 @@ on:
 jobs:
   build:
     name: "Build"
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       matrix:
         arch: [amd64,arm64]
@@ -26,8 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: "Set up QEMU"
-        uses: docker/setup-qemu-action@v3
+
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
       - name: "Build Docker Image"
