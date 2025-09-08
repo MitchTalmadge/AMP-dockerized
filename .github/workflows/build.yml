@@ -17,7 +17,7 @@ on:
 jobs:
   build:
     name: "Build"
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-latest-arm64' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-22.04-arm' || 'ubuntu-22.04' }}
     strategy:
       matrix:
         arch: [amd64,arm64]
