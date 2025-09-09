@@ -10,13 +10,32 @@
 > A lack of commits & releases does not mean this project is dead. This image is effectively an "operating system" for AMP to run on. AMP itself can be updated through its web UI at any time. Infrequently, we may need to push a new image update to support a new version of AMP.
 
 # AMP-dockerized
-This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
-(`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
+This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based Docker image so that you can set up game servers with ease! 
+
+The image is available on both registries:
+- **Docker Hub**: [`mitchtalmadge/amp-dockerized:latest`](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
+- **GitHub Container Registry**: `ghcr.io/mitchtalamadge/amp-dockerized:latest` 
 
 In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use this image.
 
 > [!WARNING]
 > **This is a community-made unofficial image, and is not endorsed by CubeCoders.**
+
+# Registry Options
+
+This image is available on two container registries:
+
+## Docker Hub
+- **Registry**: `mitchtalmadge/amp-dockerized:latest`
+- **URL**: https://hub.docker.com/r/mitchtalmadge/amp-dockerized
+- Default registry, widely supported
+
+## GitHub Container Registry (GHCR)
+- **Registry**: `ghcr.io/mitchtalamadge/amp-dockerized:latest`
+- **URL**: https://github.com/MitchTalmadge/AMP-dockerized/pkgs/container/amp-dockerized
+- Alternative registry hosted by GitHub
+
+Both registries contain identical images. Choose the one that works best for your environment. All example configurations in this repository use Docker Hub by default, but you can substitute `ghcr.io/mitchtalamadge/amp-dockerized:latest` in place of `mitchtalmadge/amp-dockerized:latest` in any configuration.
 
 # Getting Help
 

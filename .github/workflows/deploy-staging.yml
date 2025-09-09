@@ -33,25 +33,48 @@ jobs:
       - name: "Load Docker Images"
         id: load_images
         run: |
-          TAGS=""
+          DOCKERHUB_TAGS=""
+          GHCR_TAGS=""
           for f in $(find /tmp -type f -iname 'docker-image-*.tar' -print); do
             ARCH=$(echo ${f} | sed -E 's/.*docker-image-(.*).tar/\1/')
             docker load --input ${f}
-            TAG="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
-            TAGS="${TAGS} ${TAG}"
-            docker tag amp-dockerized:latest ${TAG}
+            
+            # Tag for Docker Hub
+            DOCKERHUB_TAG="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
+            DOCKERHUB_TAGS="${DOCKERHUB_TAGS} ${DOCKERHUB_TAG}"
+            docker tag amp-dockerized:latest ${DOCKERHUB_TAG}
+            
+            # Tag for GHCR
+            GHCR_TAG="ghcr.io/mitchtalamadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}-${ARCH}"
+            GHCR_TAGS="${GHCR_TAGS} ${GHCR_TAG}"
+            docker tag amp-dockerized:latest ${GHCR_TAG}
           done
-          echo "TAGS=${TAGS}" >> $GITHUB_OUTPUT
+          echo "DOCKERHUB_TAGS=${DOCKERHUB_TAGS}" >> $GITHUB_OUTPUT
+          echo "GHCR_TAGS=${GHCR_TAGS}" >> $GITHUB_OUTPUT
           docker image ls -a
       - name: "Login to Docker Hub"
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: "Login to GitHub Container Registry"
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: "Deploy to Docker Hub"
         run: docker image push --all-tags mitchtalmadge/amp-dockerized
-      - name: "Deploy Multi-Arch Manifest"
+      - name: "Deploy to GitHub Container Registry"
+        run: docker image push --all-tags ghcr.io/mitchtalamadge/amp-dockerized
+      - name: "Deploy Multi-Arch Manifests"
         run: |
-          MANIFEST="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
-          docker manifest create ${MANIFEST} ${{ steps.load_images.outputs.TAGS }}
-          docker manifest push ${MANIFEST}
+          # Docker Hub manifest
+          DOCKERHUB_MANIFEST="mitchtalmadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
+          docker manifest create ${DOCKERHUB_MANIFEST} ${{ steps.load_images.outputs.DOCKERHUB_TAGS }}
+          docker manifest push ${DOCKERHUB_MANIFEST}
+          
+          # GHCR manifest
+          GHCR_MANIFEST="ghcr.io/mitchtalamadge/amp-dockerized:${{ steps.get_branch_name.outputs.BRANCH_NAME }}"
+          docker manifest create ${GHCR_MANIFEST} ${{ steps.load_images.outputs.GHCR_TAGS }}
+          docker manifest push ${GHCR_MANIFEST}

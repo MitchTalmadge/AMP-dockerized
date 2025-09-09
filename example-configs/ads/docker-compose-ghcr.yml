@@ -1,0 +1,25 @@
+# This configuration creates one ADS instance using GitHub Container Registry (GHCR).
+# This demonstrates using GHCR as an alternative to Docker Hub.
+# This configuration is functionally identical to docker-compose.yml but uses GHCR instead.
+services:
+  amp:
+    container_name: amp
+    image: ghcr.io/mitchtalamadge/amp-dockerized:latest
+    networks:
+      default:
+        mac_address: 02:42:AC:XX:XX:XX # Please see the README about this field.
+    ports:
+      - 8080:8080
+      - 25565:25565 # Example port for Minecraft Java server.
+      - 27015:27015/udp # Example port for GMod/TF2/etc. source game servers. (Notice how it uses UDP, not TCP.)
+      # Add more ports as needed for whatever game servers you'll be running.
+      # Create the game instances through the ADS web UI.
+    volumes:
+      - ./ampdata:/home/amp/.ampdata
+    environment:
+      - "UID=120" # Change according to which user on the host will own the ampdata volume.
+      - "GID=124"
+      - "TZ=Etc/UTC" # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+      - "LICENCE=#########-####-#####-##########"
+      - "MODULE=ADS"
+    restart: unless-stopped
