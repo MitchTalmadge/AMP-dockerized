@@ -30,8 +30,6 @@ docker build -t amp-dockerized:test .
 - **Memory Requirements:** Can be memory-intensive during package installation
 
 **Known Build Issues:**
-- Recent migration to Debian 13 may cause network connectivity issues with `packages.adoptium.net`
-- If build fails on Java package downloads, the previous working version used `debian:12.11-slim`
 - Build timeouts: Always use timeout values of 600+ seconds for Docker builds
 
 ### Build Command Sequence
@@ -41,10 +39,6 @@ docker build -t amp-dockerized:latest .
 
 # Multi-platform build (as used in CI)
 docker build --platform linux/amd64,linux/arm64 -t amp-dockerized:latest .
-
-# If build fails due to Java packages, try with Debian 12:
-sed '1s/.*/FROM debian:12.11-slim/' Dockerfile > test-dockerfile
-docker build -f test-dockerfile -t amp-dockerized:test .
 ```
 
 ### Validation Steps
@@ -81,11 +75,11 @@ The repository uses GitHub Actions for continuous integration:
 ### Core Structure
 ```
 /
-├── Dockerfile              # Main Docker image definition (188 lines)
+├── Dockerfile              # Main Docker image definition
 ├── entrypoint/             # Container initialization scripts
-│   ├── main.sh            # Primary entrypoint (54 lines)
-│   ├── routines.sh        # AMP configuration routines (144 lines)  
-│   └── utils.sh           # Utility functions (25 lines)
+│   ├── main.sh            # Primary entrypoint
+│   ├── routines.sh        # AMP configuration routines
+│   └── utils.sh           # Utility functions
 ├── example-configs/        # Docker Compose examples for different games
 │   ├── ads/               # ADS (multi-server) configuration
 │   ├── minecraft/         # Minecraft server
@@ -112,7 +106,7 @@ AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
 ```
 
 ### Dependencies and Architecture
-- **Base Image:** `debian:13-slim` (recently migrated from Debian 12)
+- **Base Image:** `debian:13-slim`
 - **Runtime Requirements:** Java JDKs (8,11,17,21), Mono, Wine, various game server dependencies
 - **AMP Installation:** Manual extraction from `.deb` package (not using package manager due to Docker limitations)
 - **Volume Mount:** `/home/amp/.ampdata` for persistent game server data
@@ -160,8 +154,7 @@ AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
 
 **For Build Issues:**
 1. Always use 600+ second timeouts for Docker builds
-2. If Java package downloads fail, try switching to `debian:12.11-slim`
-3. Check network connectivity to `packages.adoptium.net`
+2. Check network connectivity to `packages.adoptium.net`
 
 **For Code Changes:**
 1. Test shell scripts with `shellcheck` before committing
