@@ -104,7 +104,7 @@ monitor_amp() {
   # Periodically process pending tasks (e.g. upgrade, reboots, ...)
   while true; do
     run_amp_command_silently "ProcessPendingTasks"
-    sleep 5 # The UI's restart timeout is 10 seconds, so let's be safe.
+    sleep 60 # Check for pending tasks every 60 seconds to reduce CPU usage
   done
 }
 
