@@ -6,17 +6,17 @@ check_file_permissions() {
 }
 
 configure_main_instance() {
-  echo "Checking Main instance existence..."
+  echo "Checking ADS instance existence..."
   if ! does_main_instance_exist; then
-    echo "Creating Main instance... (This can take a while)"
+    echo "Creating ADS instance... (This can take a while)"
     run_amp_command "QuickStart \"${USERNAME}\" \"${PASSWORD}\" \"${IPBINDING}\" \"${PORT}\"" | consume_progress_bars
     if ! does_main_instance_exist; then
-      handle_error "Failed to create Main instance. Please check your configuration."
+      handle_error "Failed to create ADS instance. Please check your configuration."
     fi
   fi
 
-  echo "Setting Main instance to start on boot..."
-  run_amp_command "ShowInstanceInfo Main" | grep "Start on Boot" | grep -q "No" && run_amp_command "SetStartBoot Main yes" || true 
+  echo "Setting ADS instance to start on boot..."
+  run_amp_command "ShowInstanceInfo ADS01" | grep "Start on Boot" | grep -q "No" && run_amp_command "SetStartBoot ADS01 yes" || true
 }
 
 configure_release_stream() {
