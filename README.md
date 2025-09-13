@@ -45,6 +45,7 @@ I will try to help out where I am able.
 - McMyAdmin 
 - Minecraft Java Edition
 - Minecraft Bedrock Edition
+- Satisfactory
 - StarBound
 - Team Fortress 2
 - Valheim
@@ -59,7 +60,7 @@ If you are *not* able to get a game working, make an issue and we can work toget
 
 # Configuration
 
-I recommend using Unraid or Docker Compose to set up the image. [Sample Docker Compose configurations may be found here](./example-configs).
+I recommend using Unraid or Docker Compose to set up the image. [Sample Docker Compose configuration may be found here](./examples).
 
 ## MAC Address (Required! Please read!)
 > [!CAUTION]
