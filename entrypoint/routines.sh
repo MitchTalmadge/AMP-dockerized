@@ -5,19 +5,11 @@ check_file_permissions() {
   chown -R ${APP_USER}:${APP_GROUP} /home/amp
 }
 
-check_licence() {
-  echo "Checking licence..."
-  if [ "${AMP_LICENCE}" = "notset" ]; then
-    handle_error "AMP_LICENCE is not set. You need to have a valid AMP licence from cubecoders.com specified in the AMP_LICENCE environment variable"
-  fi
-  # TODO: Find a way to test the licence validity
-}
-
 configure_main_instance() {
   echo "Checking Main instance existence..."
   if ! does_main_instance_exist; then
     echo "Creating Main instance... (This can take a while)"
-    run_amp_command "CreateInstance \"${AMP_MODULE}\" Main \"${IPBINDING}\" \"${PORT}\" \"${AMP_LICENCE}\" \"${USERNAME}\" \"${PASSWORD}\"" | consume_progress_bars
+    run_amp_command "QuickStart \"${USERNAME}\" \"${PASSWORD}\" \"${IPBINDING}\" \"${PORT}\"" | consume_progress_bars
     if ! does_main_instance_exist; then
       handle_error "Failed to create Main instance. Please check your configuration."
     fi

@@ -45,9 +45,9 @@ docker build --platform linux/amd64,linux/arm64 -t amp-dockerized:latest .
 Since this is a Docker-only project, validation occurs through:
 
 1. **Successful Docker Build** - Primary validation method
-2. **Container Startup Test** (requires valid AMP license):
+2. **Container Startup Test**:
 ```bash
-docker run -e AMP_LICENCE="your-license" -p 8080:8080 amp-dockerized:latest
+docker run -p 8080:8080 amp-dockerized:latest
 ```
 3. **Shell Script Syntax Check**:
 ```bash
@@ -97,12 +97,10 @@ The repository uses GitHub Actions for continuous integration:
 ### Environment Variables (Default Configuration)
 ```bash
 # Core container settings
-UID=1000, GID=1000, TZ=Etc/UTC
-PORT=8080, USERNAME=admin, PASSWORD=password, IPBINDING=0.0.0.0
+UID=1000, GID=1000, TZ=Etc/UTC, PORT=8080, USERNAME=admin, PASSWORD=password, IPBINDING=0.0.0.0
 
 # AMP-specific settings  
-AMP_AUTO_UPDATE=true, AMP_LICENCE=notset, AMP_MODULE=ADS
-AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
+AMP_AUTO_UPDATE=false, AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
 ```
 
 ### Dependencies and Architecture
@@ -114,11 +112,10 @@ AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
 
 ### Entry Point Execution Flow
 1. **main.sh:** Signal handling, environment setup, routine execution
-2. **License validation:** Checks `AMP_LICENCE` environment variable
-3. **User creation:** Creates `amp` user with specified UID/GID
-4. **Permission setup:** Sets ownership of `/home/amp` directory
-5. **AMP configuration:** Creates main instance if needed, configures release stream
-6. **Service startup:** Launches AMP and monitoring processes
+2. **User creation:** Creates `amp` user with specified UID/GID
+3. **Permission setup:** Sets ownership of `/home/amp` directory
+4. **AMP configuration:** Creates main instance if needed, configures release stream
+5. **Service startup:** Launches AMP and monitoring processes
 
 ### Common File Operations
 - **Configuration changes:** Modify environment variables in Docker Compose files

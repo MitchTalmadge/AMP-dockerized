@@ -18,9 +18,7 @@ source /opt/entrypoint/routines.sh
 trap 'handle_error' ERR
 trap_with_arg 'shutdown' INT TERM HUP QUIT KILL 
 
-# Migrate legacy vars
-export AMP_LICENCE=${LICENCE:-${AMP_LICENCE:-${AMP_LICENSE:-"notset"}}}
-export AMP_MODULE=${MODULE:-${AMP_MODULE:-"ADS"}}
+# Legacy naming
 if [ ! -z "${NIGHTLY}" ]; then
   export AMP_RELEASE_STREAM="Development"
 fi
@@ -28,8 +26,6 @@ fi
 run_startup_script
 
 create_amp_user
-
-check_licence
 
 configure_timezone
 

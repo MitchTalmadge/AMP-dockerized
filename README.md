@@ -13,7 +13,7 @@
 This repository bundles [CubeCoders AMP](https://cubecoders.com/AMP) into a Debian-based [Docker image.](https://hub.docker.com/r/mitchtalmadge/amp-dockerized)
 (`mitchtalmadge/amp-dockerized:latest`) so that you can set up game servers with ease! 
 
-In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use this image.
+In a nutshell, AMP (Application Management Panel) allows you to manage one or more game servers from a web UI. You need a [CubeCoders AMP Licence](https://cubecoders.com/AMP) to use AMP; this image does not bypass that requirement.
 
 > [!WARNING]
 > **This is a community-made unofficial image, and is not endorsed by CubeCoders.**
@@ -118,15 +118,6 @@ Here's a rough list of default ports for the various game servers. AMP also expo
 > Make sure you are using the right protocol. If you accidentally map a TCP port for a UDP game, you won't be able to connect! 
 
 ## Environment Variables
-
-### Licence
-
-| Name          | Description                                                                                                              | Default Value                                         |
-|---------------|--------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
-| `AMP_LICENCE` | The licence key for CubeCoders AMP. You can retrieve or buy this on [their website.](https://manage.cubecoders.com/)     | No Default. AMP will not boot without a real licence. |
-
-> [!NOTE]
-> Legacy McMyAdmin licenses will automatically install Minecraft, and cannot install other games. (If you don't know what McMyAdmin is, this doesn't apply to you). 
 
 ### User/Group
 
