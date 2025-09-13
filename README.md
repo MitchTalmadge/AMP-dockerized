@@ -60,7 +60,7 @@ If you are *not* able to get a game working, make an issue and we can work toget
 
 # Configuration
 
-I recommend using Unraid or Docker Compose to set up the image. [Sample Docker Compose configuration may be found here](./examples).
+I recommend using Unraid or Docker Compose to set up the image. You could also just use `docker run`. [Example scripts and configurations can be found here.](./examples).
 
 ## MAC Address (Required! Please read!)
 > [!CAUTION]
@@ -92,10 +92,11 @@ The instructions to do so are as follows:
         ...
     ```
     
-If you have a unique network situation, a random MAC may not work for you. In that case you will need
-to come up with your own solution to prevent address conflicts.
+If you have a unique network situation, a random MAC may not work for you. In that case you will need to come up with your own solution to prevent address conflicts.
 
-If you need help with any of this, please make an issue.
+Please refer to the [example configurations](./examples) if needed.
+
+For additional help with any of this, please make an issue.
 
 ## Ports
 
