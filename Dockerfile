@@ -142,9 +142,41 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
-    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk && \
+    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Set up Java alternatives with JDK 25 as the highest priority (default)
+RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk/bin/java 2500 \
+        --slave /usr/bin/javac javac /usr/lib/jvm/temurin-25-jdk/bin/javac \
+        --slave /usr/bin/jar jar /usr/lib/jvm/temurin-25-jdk/bin/jar \
+        --slave /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-25-jdk/bin/jarsigner \
+        --slave /usr/bin/keytool keytool /usr/lib/jvm/temurin-25-jdk/bin/keytool && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-21-jdk/bin/java 2100 \
+        --slave /usr/bin/javac javac /usr/lib/jvm/temurin-21-jdk/bin/javac \
+        --slave /usr/bin/jar jar /usr/lib/jvm/temurin-21-jdk/bin/jar \
+        --slave /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-21-jdk/bin/jarsigner \
+        --slave /usr/bin/keytool keytool /usr/lib/jvm/temurin-21-jdk/bin/keytool && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-17-jdk/bin/java 1700 \
+        --slave /usr/bin/javac javac /usr/lib/jvm/temurin-17-jdk/bin/javac \
+        --slave /usr/bin/jar jar /usr/lib/jvm/temurin-17-jdk/bin/jar \
+        --slave /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-17-jdk/bin/jarsigner \
+        --slave /usr/bin/keytool keytool /usr/lib/jvm/temurin-17-jdk/bin/keytool && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-11-jdk/bin/java 1100 \
+        --slave /usr/bin/javac javac /usr/lib/jvm/temurin-11-jdk/bin/javac \
+        --slave /usr/bin/jar jar /usr/lib/jvm/temurin-11-jdk/bin/jar \
+        --slave /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-11-jdk/bin/jarsigner \
+        --slave /usr/bin/keytool keytool /usr/lib/jvm/temurin-11-jdk/bin/keytool && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-8-jdk/bin/java 800 \
+        --slave /usr/bin/javac javac /usr/lib/jvm/temurin-8-jdk/bin/javac \
+        --slave /usr/bin/jar jar /usr/lib/jvm/temurin-8-jdk/bin/jar \
+        --slave /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-8-jdk/bin/jarsigner \
+        --slave /usr/bin/keytool keytool /usr/lib/jvm/temurin-8-jdk/bin/keytool && \
+    # Explicitly set JDK 25 as the default
+    update-alternatives --set java /usr/lib/jvm/temurin-25-jdk/bin/java
+
+# Set JAVA_HOME environment variable to point to JDK 25
+ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jdk
 
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
