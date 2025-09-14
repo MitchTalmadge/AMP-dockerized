@@ -23,7 +23,7 @@ docker build -t amp-dockerized:test .
 **Important Build Constraints:**
 - **Build Time:** 10-15+ minutes due to large package downloads (Java JDKs, game server dependencies)
 - **Network Dependencies:** Requires internet connectivity for downloading:
-  - Adoptium JDK packages (Java 8, 11, 17, 21)
+  - Adoptium JDK packages (Java 8, 11, 17, 21, 25)
   - CubeCoders AMP installer
   - Debian packages and Wine dependencies
 - **Architecture Support:** Builds for linux/amd64 and linux/arm64
@@ -105,7 +105,7 @@ AMP_AUTO_UPDATE=false, AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTE
 
 ### Dependencies and Architecture
 - **Base Image:** `debian:13-slim`
-- **Runtime Requirements:** Java JDKs (8,11,17,21), Mono, Wine, various game server dependencies
+- **Runtime Requirements:** Java JDKs (8,11,17,21,25), Mono, Wine, various game server dependencies
 - **AMP Installation:** Manual extraction from `.deb` package (not using package manager due to Docker limitations)
 - **Volume Mount:** `/home/amp/.ampdata` for persistent game server data
 - **Network Requirements:** Container needs internet access for AMP updates and game server downloads
