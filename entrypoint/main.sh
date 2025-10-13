@@ -23,7 +23,7 @@ detect_architecture() {
     if [ "$(uname -m)" = "aarch64" ]; then
         export JAVA_HOME="/usr/lib/jvm/temurin-25-jdk-arm64"
     else
-        export JAVA_HOME="/usr/lib/jvm/temurin-25-jdk"
+        export JAVA_HOME="/usr/lib/jvm/temurin-25-jdk-amd64"
     fi
     echo "Setting JAVA_HOME to: $JAVA_HOME"
 }
