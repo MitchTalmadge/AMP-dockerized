@@ -147,11 +147,11 @@ RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee
     rm -rf /var/lib/apt/lists/*
 
 # Set up Java alternatives with JDK 25 as the highest priority (default)
-# Use architecture-specific paths for ARM64
+# Use architecture-specific paths for both ARM64 and AMD64
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
         JDK_SUFFIX="-arm64"; \
     else \
-        JDK_SUFFIX=""; \
+        JDK_SUFFIX="-amd64"; \
     fi && \
     update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/java 2500 \
         --slave /usr/bin/javac javac /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/javac \
