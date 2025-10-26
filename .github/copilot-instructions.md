@@ -100,7 +100,7 @@ The repository uses GitHub Actions for continuous integration:
 UID=1000, GID=1000, TZ=Etc/UTC, PORT=8080, USERNAME=admin, PASSWORD=password, IPBINDING=0.0.0.0
 
 # AMP-specific settings  
-AMP_AUTO_UPDATE=false, AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
+AMP_AUTO_UPDATE=true, AMP_RELEASE_STREAM=Mainline, AMP_SUPPORT_LEVEL=UNSUPPORTED
 ```
 
 ### Dependencies and Architecture
