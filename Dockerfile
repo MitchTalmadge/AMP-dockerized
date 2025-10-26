@@ -142,9 +142,57 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
-    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk && \
+    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+# Set up Java alternatives with JDK 25 as the highest priority (default)
+# Use architecture-specific paths for both ARM64 and AMD64
+# Install each tool separately as master alternatives (not slaves)
+RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
+        JDK_SUFFIX="-arm64"; \
+    else \
+        JDK_SUFFIX="-amd64"; \
+    fi && \
+    # Install java alternatives
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/java 2500 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/java 2100 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/java 1700 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/java 1100 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/java 800 && \
+    # Install javac alternatives
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/javac 2500 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/javac 2100 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/javac 1700 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/javac 1100 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/javac 800 && \
+    # Install jar alternatives
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jar 2500 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/jar 2100 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/jar 1700 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/jar 1100 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/jar 800 && \
+    # Install jarsigner alternatives
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jarsigner 2500 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/jarsigner 2100 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/jarsigner 1700 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/jarsigner 1100 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/jarsigner 800 && \
+    # Install keytool alternatives
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/keytool 2500 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/keytool 2100 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/keytool 1700 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/keytool 1100 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/keytool 800 && \
+    # Explicitly set JDK 25 as the default for all tools
+    update-alternatives --set java /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/java && \
+    update-alternatives --set javac /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/javac && \
+    update-alternatives --set jar /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jar && \
+    update-alternatives --set jarsigner /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jarsigner && \
+    update-alternatives --set keytool /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/keytool
+
+# Set JAVA_HOME environment variable to point to JDK 25
+# This will be set at runtime via the entrypoint scripts based on architecture
 
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
