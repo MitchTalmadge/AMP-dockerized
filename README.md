@@ -149,9 +149,9 @@ Example: `TZ=America/Denver`
 ### Auto-Update
 | Name              | Description                                                                                     | Default Value |
 |-------------------|-------------------------------------------------------------------------------------------------|---------------|
-| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `false`       |
+| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `true`        |
 
-By default, you can update AMP using the web UI. AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. However, if you would like AMP to automatically update when this container reboots, you can set `AMP_AUTO_UPDATE` to `true`.
+By default, AMP will automatically update when this container reboots. You can update AMP using the web UI as well - AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. If you would like to disable automatic updates on container reboot, you can set `AMP_AUTO_UPDATE` to `false`.
 
 ## Volumes
 
