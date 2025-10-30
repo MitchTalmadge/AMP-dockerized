@@ -100,24 +100,30 @@ For additional help with any of this, please make an issue.
 
 ## Ports
 
-Here's a rough list of default ports for the various game servers. AMP also exposes port 8080 for the Web UI (can be changed with environment variables). If you find an inaccuracy, open an issue!
+When using this image, you need to configure Docker ahead of time to expose the ports that your game servers will use. Any changes to the port mappings will require the container to be restarted.
 
-| Module Name | Default Ports                                                                                                                                                                                  |
-|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `ARK`       | UDP 27015 & UDP 7777 & UDP 7778 ([Guide](https://ark.gamepedia.com/Dedicated_Server_Setup))                                                                                                    |
-| `Arma3`     | UDP 2302 to UDP 2306 ([Guide](https://community.bistudio.com/wiki/Arma_3_Dedicated_Server))                                                                                                    |
-| `Factorio`  | UDP 34197 ([Guide](https://wiki.factorio.com/Multiplayer))                                                                                                                                     |
-| `FiveM`     | UDP 30120 & TCP 30120 ([Guide](https://docs.fivem.net/docs/server-manual/setting-up-a-server/))                                                                                                |
-| `JC2MP`     | UDP 27015 & UDP 7777 & UDP 7778 (Unconfirmed!)                                                                                                                                                 |
-| `McMyAdmin` | TCP 25565                                                                                                                                                                                      |
-| `Minecraft` | TCP 25565 (Java) or UDP 19132 (Bedrock)                                                                                                                                                        |
-| `Rust`      | UDP 28015 ([Guide](https://developer.valvesoftware.com/wiki/Rust_Dedicated_Server))                                                                                                            |
-| `SevenDays` | UDP 26900 to UDP 26902 & TCP 26900 ([Guide](https://developer.valvesoftware.com/wiki/7_Days_to_Die_Dedicated_Server))                                                                          |
-| `StarBound` | TCP 21025 ([Guide](https://starbounder.org/Guide:Setting_Up_Multiplayer))                                                                                                                      |
-| `Valheim`   | UDP 5678 → 5680                                                                                                                                                                                |
+You can find most game server ports on the [Port Forward](https://portforward.com/ports/) website. Alternatively, you could google "[game name] server ports".
+
+For example, with Minecraft, click on the "M" section, then scroll to "Minecraft: Java Edition Server". The ports listed are `TCP: 25565, UDP: 25565`. In this case, you would need to map both TCP and UDP port `25565` from the container to the host:
+
+- For Unraid, you would create two port mappings for `25565`; one using TCP and one using UDP.
+- For Docker Compose, you need to add a `ports` section like so:
+  ```yaml
+  # Your config may look a little different; focus on the ports section
+  services:
+    amp:
+      image: mitchtalmadge/amp-dockerized
+      ports:
+        - "25565:25565/tcp"
+        - "25565:25565/udp"
+      ...
+  ```
+- For `docker run`, use the following flags:
+  `-p 25565:25565/tcp -p 25565:25565/udp`
+
 
 > [!IMPORTANT]
-> Make sure you are using the right protocol. If you accidentally map a TCP port for a UDP game, you won't be able to connect! 
+> Make sure you are using the right protocol. If you accidentally map a TCP port for a UDP game, you won't be able to connect!
 
 ## Environment Variables
 
@@ -149,7 +155,7 @@ Example: `TZ=America/Denver`
 ### Auto-Update
 | Name              | Description                                                                                     | Default Value |
 |-------------------|-------------------------------------------------------------------------------------------------|---------------|
-| `AMP_AUTO_UPDATE` | Set to `true` if you would like AMP to automatically update when you reboot the container. | `true`        |
+| `AMP_AUTO_UPDATE` | Set to `false` if you would like to disable automatic updates on container reboot. You will still be able to update AMP manually through the web UI. | `true`        |
 
 By default, AMP will automatically update when this container reboots. You can update AMP using the web UI as well - AMP will alert you when an update is available through its UI. The updates to this container image are not directly tied to AMP updates. Think of this container more like an all-in-one "operating system" for AMP. New versions of this container are only necessary when AMP is not working correctly. If you would like to disable automatic updates on container reboot, you can set `AMP_AUTO_UPDATE` to `false`.
 
