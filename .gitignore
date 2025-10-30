@@ -1,5 +1,4 @@
 .idea
 .vscode
 *.iml
-docker-compose.yml
 test
