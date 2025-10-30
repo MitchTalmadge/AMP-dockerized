@@ -100,6 +100,11 @@ monitor_amp() {
   done
 }
 
+run_migrations() {
+  echo "Running migrations..."
+  
+}
+
 run_startup_script() {
   # Users may provide their own startup script for installing dependencies, etc.
   STARTUP_SCRIPT="/home/amp/scripts/startup.sh"

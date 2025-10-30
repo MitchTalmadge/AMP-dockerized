@@ -13,27 +13,20 @@ echo "Thank you!!"
 echo "----------------------"
 echo ""
 
+source /opt/entrypoint/migrations.sh
 source /opt/entrypoint/utils.sh
 source /opt/entrypoint/routines.sh
 trap 'handle_error' ERR
 trap_with_arg 'shutdown' INT TERM HUP QUIT KILL
 
-# Set JAVA_HOME based on architecture
-detect_architecture() {
-    if [ "$(uname -m)" = "aarch64" ]; then
-        export JAVA_HOME="/usr/lib/jvm/temurin-25-jdk-arm64"
-    else
-        export JAVA_HOME="/usr/lib/jvm/temurin-25-jdk-amd64"
-    fi
-    echo "Setting JAVA_HOME to: $JAVA_HOME"
-}
-
-detect_architecture 
-
 # Legacy naming
 if [ ! -z "${NIGHTLY}" ]; then
   export AMP_RELEASE_STREAM="Development"
 fi
+
+migrations_run_all
+
+exit; # Debug
 
 run_startup_script
 
