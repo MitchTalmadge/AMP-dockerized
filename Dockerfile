@@ -228,6 +228,4 @@ RUN wget -qO - http://repo.cubecoders.com/archive.key | gpg --dearmor > /etc/apt
 COPY entrypoint /opt/entrypoint
 RUN chmod -R +x /opt/entrypoint
 
-VOLUME ["/home/amp/"]
-
 ENTRYPOINT ["/opt/entrypoint/main.sh"]

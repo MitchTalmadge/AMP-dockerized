@@ -30,6 +30,8 @@ detect_architecture() {
 
 detect_architecture 
 
+check_volume_structure
+
 # Legacy naming
 if [ ! -z "${NIGHTLY}" ]; then
   export AMP_RELEASE_STREAM="Development"

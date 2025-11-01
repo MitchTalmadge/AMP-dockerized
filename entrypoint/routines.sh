@@ -1,5 +1,50 @@
 #!/bin/bash
 
+check_volume_structure() {
+  # Starting with V24, we are asking users to mount /home/amp instead of just /home/amp/.ampdata. 
+  # This function allows existing users to simply change their mount point in the container, 
+  # without needing to do any complicated remapping of their host data.
+
+  echo "Checking volume structure..."
+
+  local AMP_HOME="/home/amp"
+  local AMP_DATA_DIR="${AMP_HOME}/.ampdata"
+  local AMP_DOCKERIZED_DIR="${AMP_DATA_DIR}/.amp-dockerized"
+  local LEGACY_INSTANCES_JSON="${AMP_HOME}/instances.json"
+  local LEGACY_INSTANCES_DIR="${AMP_HOME}/instances"
+
+  if [ -d "${AMP_DATA_DIR}" ]; then
+    # There is already a .ampdata directory -- nothing to do.
+    echo "Volume structure is valid."
+    return 0
+  fi
+
+  if [ ! -f "${LEGACY_INSTANCES_JSON}" ] && [ ! -d "${LEGACY_INSTANCES_DIR}" ]; then
+    # Neither .ampdata nor the contents of .ampdata exist, so this is a fresh install.
+    echo "Volume structure is valid and consistent with fresh install."
+    return 0
+  fi
+
+  # At this point we have detected that the contents of .ampdata are mapped to /home/amp, which is expected for V24 volume migration.
+  # For example, the volume mount may have changed from:
+  #     /mnt/user/appdata/amp:/home/amp/.ampdata 
+  # to...
+  #     /mnt/user/appdata/amp:/home/amp
+  echo "Updated volume mount detected. Migrating .ampdata..."
+  mkdir -p "${AMP_DATA_DIR}"
+
+  find "${AMP_HOME}" -mindepth 1 -maxdepth 1 \
+    ! -name '.ampdata' \
+    ! -name 'scripts' \
+    -exec mv {} "${AMP_DATA_DIR}" \;
+
+  # Let's also leave a fingerprint indicating that a migration took place
+  mkdir -p "${AMP_DOCKERIZED_DIR}"
+  touch "${AMP_DOCKERIZED_DIR}/.v24_volume_migrated"
+
+  echo "Migration complete."
+}
+
 check_file_permissions() {
   echo "Checking file permissions..."
   chown -R ${APP_USER}:${APP_GROUP} /home/amp
