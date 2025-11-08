@@ -34,6 +34,9 @@ If you are using Unraid, you may want to check out the [support topic](https://f
 
 This image works great on Unraid and I even bought the software just to make sure it worked (and now I use Unraid for all sorts of things!)
 
+> [!WARNING]
+> If you are using an automatic Docker image updater on Unraid, please exclude this image. I would strongly prefer that everyone read my changelogs before updating.
+
 I will try to help out where I am able.
  
 # Supported Game Servers
