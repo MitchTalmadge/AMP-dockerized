@@ -30,7 +30,7 @@ detect_architecture() {
 
 detect_architecture 
 
-check_volume_structure
+check_data_volume
 
 # Legacy naming
 if [ ! -z "${NIGHTLY}" ]; then
