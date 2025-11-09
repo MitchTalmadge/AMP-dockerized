@@ -1,5 +1,51 @@
 #!/bin/bash
 
+check_data_volume() {
+  # Starting with V24, we recommend that users mount /home/amp instead of /home/amp/.ampdata. 
+  # This function allows existing users to simply change their mount point in the container, 
+  # without needing to do any complicated remapping of their host data.
+  echo "Checking data volume..."
+
+  local AMP_HOME="/home/amp"
+  local AMP_DATA_DIR="${AMP_HOME}/.ampdata"
+  local AMP_DOCKERIZED_DIR="${AMP_DATA_DIR}/.amp-dockerized"
+  local LEGACY_INSTANCES_JSON="${AMP_HOME}/instances.json"
+  local LEGACY_INSTANCES_DIR="${AMP_HOME}/instances"
+
+  if [ -f "${LEGACY_INSTANCES_JSON}" ] || [ -d "${LEGACY_INSTANCES_DIR}" ]; then
+    echo "Updated data volume detected. Migration is required."
+    # At this point we have detected that the contents of .ampdata are mapped to /home/amp, which is expected for V24 volume migration.
+    # For example, the volume mount may have changed from:
+    #     /mnt/user/appdata/amp:/home/amp/.ampdata 
+    # to...
+    #     /mnt/user/appdata/amp:/home/amp
+    if [ -d "${AMP_DATA_DIR}" ]; then # This can happen if the new volume (/home/amp) was accidentally mounted on image v23 or earlier.
+      if [ ! -z "$(ls -A "${AMP_DATA_DIR}")" ]; then # Something is very odd if .ampdata is not empty.
+        echo "Error: Need to migrate data (${LEGACY_INSTANCES_DIR} and ${LEGACY_INSTANCES_JSON}), but ${AMP_DATA_DIR} is not empty. Please resolve this conflict manually. For help, visit https://github.com/MitchTalmadge/AMP-dockerized/discussions/247"
+        exit 1
+      fi
+      echo "Empty .ampdata directory detected. Removing..."
+      rmdir "${AMP_DATA_DIR}"
+    fi
+    
+    echo "Beginning data migration..."
+    mkdir -p "${AMP_DATA_DIR}"
+
+    find "${AMP_HOME}" -mindepth 1 -maxdepth 1 \
+      ! -name '.ampdata' \
+      ! -name 'scripts' \
+      -exec mv {} "${AMP_DATA_DIR}" \;
+
+    # For future use, we will leave a fingerprint indicating that a migration took place
+    mkdir -p "${AMP_DOCKERIZED_DIR}"
+    touch "${AMP_DOCKERIZED_DIR}/.v24_volume_migrated"
+
+    echo "Migration complete."
+  fi
+
+  echo "Data volume is ok!"
+}
+
 check_file_permissions() {
   echo "Checking file permissions..."
   chown -R ${APP_USER}:${APP_GROUP} /home/amp
