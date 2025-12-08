@@ -74,8 +74,11 @@ configure_main_instance() {
     fi
   fi
 
+  local main_name
+  main_name=$(get_main_instance_name)
+
   echo "Setting ADS instance to start on boot..."
-  run_amp_command "ShowInstanceInfo ADS01" | grep "Start on Boot" | grep -q "No" && run_amp_command "SetStartBoot ADS01 yes" || true
+  run_amp_command "ShowInstanceInfo ${main_name}" | grep "Start on Boot" | grep -q "No" && run_amp_command "SetStartBoot ${main_name} yes" || true
 }
 
 configure_release_stream() {
