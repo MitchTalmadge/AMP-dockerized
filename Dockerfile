@@ -87,7 +87,8 @@ ARG AMPDEPS="\
     socat \
     tmux \
     unzip \
-    xz-utils"
+    xz-utils \
+    libicu76"
 
 # srcds (TF2, GMod, ...) dependencies
 ARG SRCDSDEPS="\
