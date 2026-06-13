@@ -216,6 +216,14 @@ configure_license() {
     else
       echo "Warning: Failed to reactivate licence."
     fi
+
+    # Reactivate ADS01 specifically
+    echo "Reactivating ADS01."
+    if run_amp_command_silently "Reactivate ADS01 \"${AMP_LICENCE}\"" >/dev/null 2>&1; then
+      echo "ADS01 reactivated successfully."
+    else
+      echo "Warning: Failed to reactivate ADS01."
+    fi
   fi
 }
 
