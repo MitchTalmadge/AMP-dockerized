@@ -21,24 +21,73 @@ jobs:
     strategy:
       matrix:
         arch: [amd64,arm64]
+    env:
+      # Set the DOCKERHUB_IMAGE repository variable to push elsewhere (e.g. in forks).
+      IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'mitchtalmadge/amp-dockerized' }}
     steps:
       - name: "Checkout Git Repo"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: "Get Latest ampinstmgr Version"
+        # Passed to the build as a build-arg so that the layer cache is busted
+        # whenever CubeCoders releases a new version. Without this, a fully
+        # cached build would keep shipping the previously downloaded ampinstmgr.
+        id: amp_version
+        run: |
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            URL="https://cdn-repo.c7rs.com/aarch64/debian/Packages"
+          else
+            URL="https://cdn-repo.c7rs.com/debian/Packages"
+          fi
+          VERSION=$(curl -fsSL "${URL}" | awk '
+            /^Package: ampinstmgr$/ { found=1; next }
+            /^Package:/ { found=0 }
+            found && /^Version:/ { print $2 }
+          ' | sort -V | tail -n 1)
+          if [[ -z "${VERSION}" ]]; then
+            echo "::error::Could not determine the latest ampinstmgr version from the CubeCoders repository."
+            exit 1
+          fi
+          echo "Latest ampinstmgr version: ${VERSION}"
+          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
+      - name: "Login to Docker Hub"
+        if: ${{ inputs.for_deploy == true }}
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: "Build Docker Image"
-        uses: docker/build-push-action@v4
+        id: build
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/${{ matrix.arch }}
-          tags: amp-dockerized:latest
-          outputs: type=docker,dest=/tmp/docker-image-${{ matrix.arch }}.tar
-      - name: "Upload Docker Image Artifact"
+          provenance: false
+          build-args: |
+            AMP_VERSION=${{ steps.amp_version.outputs.VERSION }}
+          cache-from: type=gha,scope=build-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
+          # When deploying, push the image by digest; the deploy workflow then
+          # stitches the per-arch digests into multi-arch manifests without the
+          # image ever being exported to a tar file.
+          outputs: ${{ inputs.for_deploy == true && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) || '' }}
+
+      - name: "Export Digest"
+        if: ${{ inputs.for_deploy == true }}
+        run: |
+          mkdir -p /tmp/digests
+          digest="${{ steps.build.outputs.digest }}"
+          touch "/tmp/digests/${digest#sha256:}"
+      - name: "Upload Digest Artifact"
         if: ${{ inputs.for_deploy == true }}
         uses: actions/upload-artifact@v4
         with:
-          name: image-${{ matrix.arch }}
-          path: /tmp/docker-image-${{ matrix.arch }}.tar
+          name: digests-${{ matrix.arch }}
+          path: /tmp/digests/*
+          if-no-files-found: error
+          retention-days: 1

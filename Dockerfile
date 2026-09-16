@@ -24,7 +24,10 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     apt-transport-https \
+    dirmngr \
+    gnupg \
     jq \
+    locales \
     sed \
     tzdata \
     wget && \
@@ -36,14 +39,6 @@ RUN apt-get update && \
     /var/tmp/*
 
 # Configure Locales
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends locales && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
@@ -197,22 +192,27 @@ RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
 # Manually install ampinstmgr by extracting it from the deb package.
 # Docker doesn't have systemctl and other things that AMP's deb postinst expects,
 # so we can't use apt to install ampinstmgr.
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    dirmngr \
-    apt-transport-https \
-    gnupg
 
-# Add CubeCoders repository and key
-RUN wget -qO - http://repo.cubecoders.com/archive.key | gpg --dearmor > /etc/apt/trusted.gpg.d/cubecoders-archive-keyring.gpg && \
+# The latest ampinstmgr version, passed in by CI. Referencing it below busts the
+# build cache for this layer whenever a new version is released; without it, a
+# cached layer would silently keep shipping the old ampinstmgr.
+ARG AMP_VERSION=
+
+# Add CubeCoders repository and key.
+# Uses the deb822 .sources format and keyring location from the official
+# getamp.sh installer (addRepo), as required on Debian 12+.
+RUN install -d -m 0755 /usr/share/keyrings && \
+    wget -qO /usr/share/keyrings/cdn-repo.c7rs.com.gpg https://cdn-repo.c7rs.com/archive.key && \
     if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        echo "deb http://repo.cubecoders.com/aarch64 debian/" > /etc/apt/sources.list.d/cubecoders.list; \
+        REPO_SUFFIX="aarch64/"; \
     else \
-        echo "deb http://repo.cubecoders.com/ debian/" > /etc/apt/sources.list.d/cubecoders.list; \
+        REPO_SUFFIX=""; \
     fi && \
+    printf "Types: deb\nURIs: https://cdn-repo.c7rs.com/%s\nSuites: debian/\nArchitectures: %s\nSigned-By: /usr/share/keyrings/cdn-repo.c7rs.com.gpg\n" "${REPO_SUFFIX}" "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/cdn-repo.c7rs.com.sources && \
     apt-get update && \
-    # Just download (don't actually install) ampinstmgr
-    apt-get install -y --no-install-recommends --download-only ampinstmgr && \
+    # Just download (don't actually install) ampinstmgr.
+    # Pin the version when CI provides one; fall back to the latest otherwise.
+    apt-get install -y --no-install-recommends --download-only "ampinstmgr${AMP_VERSION:+=${AMP_VERSION}}" && \
     # Extract ampinstmgr from downloaded package
     mkdir -p /tmp/ampinstmgr && \
     dpkg-deb -x /var/cache/apt/archives/ampinstmgr_*.deb /tmp/ampinstmgr && \

@@ -1,0 +1,213 @@
+name: "Check AMP Update"
+
+# Checks the CubeCoders APT repository daily for a new version of ampinstmgr.
+# When both the amd64 and aarch64 repositories serve a version newer than the
+# last one built, this workflow dispatches "Deploy Production" with the next
+# release tag, waits for it to succeed, then creates a matching GitHub
+# release. The last-built version is read from the release history: a marker
+# comment in the body of the newest automated release, falling back to
+# release titles like "v26 - AMP 2.7.2". No extra state or PAT is required
+# (the GITHUB_TOKEN cannot write repository variables). If the deploy fails,
+# no release is created and the next scheduled run will try again.
+
+on:
+  schedule:
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Build and release even if no new version was detected"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # Create releases and tags
+  actions: write # Dispatch the deploy workflow
+
+concurrency:
+  group: check-amp-update
+  cancel-in-progress: false
+
+jobs:
+  check:
+    name: "Check for New Version"
+    runs-on: ubuntu-latest
+    outputs:
+      should_build: ${{ steps.compare.outputs.SHOULD_BUILD }}
+      version: ${{ steps.upstream.outputs.VERSION }}
+      previous_version: ${{ steps.compare.outputs.PREVIOUS_VERSION }}
+    steps:
+      - name: "Get Latest ampinstmgr Version"
+        id: upstream
+        run: |
+          get_version() {
+            curl -fsSL "$1" | awk '
+              /^Package: ampinstmgr$/ { found=1; next }
+              /^Package:/ { found=0 }
+              found && /^Version:/ { print $2 }
+            ' | sort -V | tail -n 1
+          }
+          AMD64_VERSION=$(get_version "https://cdn-repo.c7rs.com/debian/Packages")
+          ARM64_VERSION=$(get_version "https://cdn-repo.c7rs.com/aarch64/debian/Packages")
+          echo "amd64: ${AMD64_VERSION:-<not found>} | arm64: ${ARM64_VERSION:-<not found>}"
+          if [[ -z "${AMD64_VERSION}" || -z "${ARM64_VERSION}" ]]; then
+            echo "::error::Could not determine the latest ampinstmgr version from the CubeCoders repository."
+            exit 1
+          fi
+          if [[ "${AMD64_VERSION}" != "${ARM64_VERSION}" ]]; then
+            echo "::notice::The amd64 (${AMD64_VERSION}) and arm64 (${ARM64_VERSION}) repositories are out of sync. Skipping until both serve the same version."
+            echo "VERSION=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "VERSION=${AMD64_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: "Get Last Built Version"
+        id: last
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          # The newest release carrying a version marker in its body wins.
+          # Releases created by this workflow always contain the marker.
+          LAST_VERSION=$(gh api --paginate "repos/${GH_REPO}/releases" --jq '.[].body // ""' \
+            | grep -oE 'ampinstmgr-version: [0-9][0-9A-Za-z.+~-]*' | head -n 1 | awk '{print $2}')
+          if [[ -z "${LAST_VERSION}" ]]; then
+            # No marker anywhere (e.g. before the first automated release):
+            # fall back to manually written titles like "v26 - AMP 2.7.2".
+            LAST_VERSION=$(gh api --paginate "repos/${GH_REPO}/releases" --jq '.[].name // ""' \
+              | grep -oE -e '- AMP [0-9][0-9A-Za-z.+~-]*$' | head -n 1 | awk '{print $3}')
+          fi
+          echo "Last built version: ${LAST_VERSION:-<unknown>}"
+          echo "LAST_VERSION=${LAST_VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: "Compare With Last Built Version"
+        id: compare
+        env:
+          NEW_VERSION: ${{ steps.upstream.outputs.VERSION }}
+          LAST_VERSION: ${{ steps.last.outputs.LAST_VERSION }}
+          FORCE: ${{ inputs.force }}
+        run: |
+          echo "PREVIOUS_VERSION=${LAST_VERSION}" >> "$GITHUB_OUTPUT"
+          SHOULD_BUILD=false
+          if [[ -z "${NEW_VERSION}" ]]; then
+            echo "Repositories are out of sync; nothing to do."
+          elif [[ "${FORCE}" == "true" ]]; then
+            echo "Force requested; building ampinstmgr ${NEW_VERSION}."
+            SHOULD_BUILD=true
+          elif [[ -z "${LAST_VERSION}" ]]; then
+            echo "No previously built version found in the release history; treating ampinstmgr ${NEW_VERSION} as new."
+            SHOULD_BUILD=true
+          elif dpkg --compare-versions "${NEW_VERSION}" gt "${LAST_VERSION}"; then
+            echo "New ampinstmgr version found: ${LAST_VERSION} -> ${NEW_VERSION}."
+            SHOULD_BUILD=true
+          else
+            echo "Already up to date (last built: ${LAST_VERSION}, upstream: ${NEW_VERSION})."
+          fi
+          echo "SHOULD_BUILD=${SHOULD_BUILD}" >> "$GITHUB_OUTPUT"
+
+  build_and_release:
+    name: "Build and Release"
+    runs-on: ubuntu-latest
+    needs: check
+    if: needs.check.outputs.should_build == 'true'
+    timeout-minutes: 180
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      AMP_VERSION: ${{ needs.check.outputs.version }}
+      PREVIOUS_VERSION: ${{ needs.check.outputs.previous_version }}
+    steps:
+      - name: "Determine Next Release Tag"
+        id: next_tag
+        run: |
+          # Consider both releases and plain git tags: forks (and fresh repos)
+          # may carry v<N> tags without any releases, and the new tag must not
+          # collide with either. When running in a fork, also consider the
+          # parent repository's tags so the numbering stays aligned with
+          # upstream even when the fork's tags have drifted behind.
+          PARENT=$(gh api "repos/${GH_REPO}" --jq '.parent.full_name // empty')
+          [[ -n "${PARENT}" ]] && echo "Fork of ${PARENT}; including its tags."
+          LATEST_NUMBER=$(
+            {
+              gh api --paginate "repos/${GH_REPO}/releases" --jq '.[].tag_name'
+              gh api --paginate "repos/${GH_REPO}/tags" --jq '.[].name'
+              [[ -n "${PARENT}" ]] && gh api --paginate "repos/${PARENT}/tags" --jq '.[].name'
+            } | grep -E '^v[0-9]+$' | sed 's/^v//' | sort -n | tail -n 1)
+          NEXT_TAG="v$(( ${LATEST_NUMBER:-0} + 1 ))"
+          TARGET_SHA=$(gh api "repos/${GH_REPO}/commits/${{ github.ref_name }}" --jq '.sha')
+          echo "Next release: ${NEXT_TAG} (targeting ${TARGET_SHA})"
+          echo "NEXT_TAG=${NEXT_TAG}" >> "$GITHUB_OUTPUT"
+          echo "TARGET_SHA=${TARGET_SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: "Dispatch Deploy Production"
+        id: dispatch
+        env:
+          NEXT_TAG: ${{ steps.next_tag.outputs.NEXT_TAG }}
+        run: |
+          # Small backdate to tolerate clock skew between the runner and GitHub.
+          DISPATCH_TIME=$(date -u -d '60 seconds ago' +%Y-%m-%dT%H:%M:%SZ)
+          gh workflow run deploy-prod.yml --ref "${{ github.ref_name }}" -f tag="${NEXT_TAG}"
+          # Find the run we just dispatched.
+          RUN_ID=""
+          for _ in $(seq 1 12); do
+            sleep 10
+            RUN_ID=$(gh api -X GET "repos/${GH_REPO}/actions/workflows/deploy-prod.yml/runs" \
+              -f event=workflow_dispatch -f "created=>=${DISPATCH_TIME}" \
+              --jq '.workflow_runs[0].id // empty')
+            [[ -n "${RUN_ID}" ]] && break
+          done
+          if [[ -z "${RUN_ID}" ]]; then
+            echo "::error::Dispatched deploy-prod.yml but could not find the resulting workflow run."
+            exit 1
+          fi
+          echo "Deploy run: https://github.com/${GH_REPO}/actions/runs/${RUN_ID}"
+          echo "RUN_ID=${RUN_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: "Wait for Deploy to Finish"
+        env:
+          RUN_ID: ${{ steps.dispatch.outputs.RUN_ID }}
+        run: |
+          while true; do
+            STATUS=$(gh api "repos/${GH_REPO}/actions/runs/${RUN_ID}" --jq '.status')
+            [[ "${STATUS}" == "completed" ]] && break
+            echo "Deploy run ${RUN_ID} is ${STATUS}; waiting..."
+            sleep 60
+          done
+          CONCLUSION=$(gh api "repos/${GH_REPO}/actions/runs/${RUN_ID}" --jq '.conclusion')
+          echo "Deploy run ${RUN_ID} concluded: ${CONCLUSION}"
+          if [[ "${CONCLUSION}" != "success" ]]; then
+            echo "::error::Deploy failed; not creating a release. The next scheduled check will retry."
+            exit 1
+          fi
+
+      - name: "Create GitHub Release"
+        env:
+          NEXT_TAG: ${{ steps.next_tag.outputs.NEXT_TAG }}
+          TARGET_SHA: ${{ steps.next_tag.outputs.TARGET_SHA }}
+        run: |
+          if [[ -n "${PREVIOUS_VERSION}" ]]; then
+            BUMP_LINE="Bumped \`ampinstmgr\` from ${PREVIOUS_VERSION} to ${AMP_VERSION}."
+          else
+            BUMP_LINE="Bumped \`ampinstmgr\` to ${AMP_VERSION}."
+          fi
+          gh release create "${NEXT_TAG}" \
+            --target "${TARGET_SHA}" \
+            --title "${NEXT_TAG} - AMP ${AMP_VERSION}" \
+            --notes "${BUMP_LINE}
+
+          ---
+          _This release was created automatically after a new \`ampinstmgr\` version was detected in the CubeCoders repository._
+          <!-- ampinstmgr-version: ${AMP_VERSION} -->"
+
+      - name: "Write Summary"
+        env:
+          NEXT_TAG: ${{ steps.next_tag.outputs.NEXT_TAG }}
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'mitchtalmadge/amp-dockerized' }}
+        run: |
+          {
+            echo "## AMP Update Released"
+            echo ""
+            echo "- ampinstmgr: \`${PREVIOUS_VERSION:-<unset>}\` -> \`${AMP_VERSION}\`"
+            echo "- Release: [${NEXT_TAG}](https://github.com/${GH_REPO}/releases/tag/${NEXT_TAG})"
+            echo "- Image: \`${IMAGE}:${NEXT_TAG}\` (and \`latest\`)"
+          } >> "$GITHUB_STEP_SUMMARY"
