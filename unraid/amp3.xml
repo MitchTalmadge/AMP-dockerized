@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Container version="2">
-  <Name>amp3</Name>
+  <Name>AMP-v3</Name>
   <Repository>tareku99/amp-v3-dockerized:latest</Repository>
   <Registry>https://hub.docker.com/r/tareku99/amp-v3-dockerized</Registry>
   <Network>bridge</Network>

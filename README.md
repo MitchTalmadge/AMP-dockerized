@@ -52,9 +52,9 @@ Host ports can differ from container ports. Docker applies changes to published 
 
 ## Unraid setup
 
-The template is named **amp3** and is available as [unraid/amp3.xml](unraid/amp3.xml). It defines the published image, panel port, persistent data path, and required runtime permissions, targeting `tareku99/amp-v3-dockerized:latest`.
+The template is named **AMP-v3** and is available as [unraid/amp3.xml](unraid/amp3.xml). It defines the published image, panel port, persistent data path, and required runtime permissions, targeting `tareku99/amp-v3-dockerized:latest`.
 
-For manual installation, the template file belongs at `/boot/config/plugins/dockerMan/templates-user/my-amp3.xml` on the Unraid boot device. Saved templates are available from **Docker > Add Container > Template**, where the entry is named **amp3**. Community Applications availability depends on submission review and catalog publication.
+For manual installation, the template file belongs at `/boot/config/plugins/dockerMan/templates-user/my-amp3.xml` on the Unraid boot device. Saved templates are available from **Docker > Add Container > Template**, where the entry is named **AMP-v3**. Community Applications availability depends on submission review and catalog publication.
 
 The following values describe the intended configuration for an amd64 Unraid host. Unraid compatibility testing is pending.
 
