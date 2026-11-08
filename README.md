@@ -8,6 +8,8 @@ Community-maintained container packaging for [CubeCoders AMP 3](https://cubecode
 
 This project provides the Docker environment and startup integration. AMP itself is CubeCoders software and requires an appropriate licence. The project is not affiliated with or endorsed by CubeCoders.
 
+> **Experimental staging redesign:** The extracted-package installation described below is pending Unraid validation. The production `latest` image still uses the earlier installer path.
+
 ## Overview
 
 The image is based on Debian 13 and includes systemd, common game-server dependencies, multiple Java runtimes, Mono, and Wine. AMP-managed game-server processes run inside the same container as the panel.
@@ -16,16 +18,18 @@ The image is based on Debian 13 and includes systemd, common game-server depende
 |---|---|
 | Control panel | HTTP on container port `8443` by default |
 | Service management | systemd runs as PID 1 |
-| AMP installation | Official CubeCoders installer, executed on first container start |
+| AMP installation | Official signed repository packages, extracted during the image build |
 | Persistent state | `/opt/cubecoders/amp3/data` |
 | Game networking | Explicit TCP and UDP port mappings for each hosted game |
 | Architecture | `linux/amd64` |
 
 ## Container lifecycle
 
-The official AMP 3 installer is downloaded during the Docker image build. AMP packages are installed when a newly created container first starts, using the configured release stream.
+The image build downloads `amp3` and `amp3-sysagent` through APT using CubeCoders' signed repository metadata, then extracts their payloads without executing AMP package maintainer scripts. This follows the extraction approach used by the AMP 2 image.
 
-An ordinary restart reuses that container's installed packages. A replacement container runs installation again against the persistent data directory. Startup can take several minutes while packages are downloaded and installed.
+At startup, a small root helper prepares directory ownership using open directory descriptors. A separate service runs as `amp` to copy the packaged seed and write initial settings. It does not recursively hand regular data files from root to `amp`, modify host sysctls, or install AMP packages at first boot. Existing usable versions are retained; incomplete or blacklisted seed versions stop initialization for manual review.
+
+The installation redesign is experimental. Avoid testing against the only copy of an existing AMP data directory.
 
 AMP account creation takes place in the web setup wizard. The first-run setup link is recorded in `setup-link.txt` inside the persistent data directory.
 
@@ -34,13 +38,12 @@ AMP account creation takes place in the web setup wizard. The first-run setup li
 | Environment variable | Default | Description |
 |---|---|---|
 | `PORT` | `8443` | Internal HTTP port for the AMP panel |
-| `AMP3_STREAM` | `preview` | Installation stream: `mainline`, `preview`, or `development` |
-| `AMP3_LANG` | `en` | Installer language: `en`, `de`, `fr`, or `nl` |
-| `AMP3_REPO` | `https://cdn-repo.c7rs.com/amp3` | AMP 3 package repository |
 | `AMP3_ORIGIN` | `https://cdn-downloads.c7rs.com/AMP3` | AMP 3 update origin |
 | `TZ` | `Etc/UTC` | Container time zone |
 
-AMP manages its own `amp` system account. Panel users are managed by AMP.
+The image creates the `amp` service account. Panel users are managed by AMP.
+
+`AMP3_STREAM` (default `preview`) and `AMP3_REPO` (default `https://cdn-repo.c7rs.com/amp3`) are build arguments. Changing them requires rebuilding the image; incompatible runtime overrides are rejected. `AMP3_LANG` is no longer used because the interactive installer is not invoked.
 
 ## Storage and networking
 
@@ -51,6 +54,8 @@ Only the panel port is mapped in the default Compose example. Game-server ports 
 Host ports can differ from container ports. Docker applies changes to published port mappings when the container is recreated.
 
 ## Unraid setup
+
+> **Compatibility status:** The earlier installer path failed on Unraid with `fs.protected_hardlinks=0`. The staging redesign replaces the root ownership handover that triggers this installer requirement with unprivileged seed creation. It leaves the host setting unchanged. This is a proposed compatibility fix, pending an image build and Unraid validation.
 
 The template is named **AMP-v3** and is available as [unraid/amp3.xml](unraid/amp3.xml). It defines the published image, panel port, persistent data path, and required runtime permissions, targeting `tareku99/amp-v3-dockerized:latest`.
 
@@ -100,7 +105,9 @@ Keep the existing extra parameters. Each container needs its own address, distin
 
 The runtime targets Linux Docker hosts with systemd-compatible cgroups. Rootless Docker and Docker Desktop are outside the supported target environment.
 
-The container shares the host cgroup namespace so its cgroup paths match the bind-mounted hierarchy. A pseudo-TTY provides the console required for visible systemd startup logs. AMP installation and service logs remain available through `journalctl` inside the container.
+The container shares the host cgroup namespace so its cgroup paths match the bind-mounted hierarchy. A pseudo-TTY provides the console required for visible systemd startup logs. AMP bootstrap and service logs remain available through `journalctl` inside the container.
+
+AMP 3 native game servers launch through `systemd-run` as transient services. The vendor documentation describes a `native.noSystemd` refusal when that facility is absent. Cgroups provide process tracking, limits, and shutdown for those services; they are required for this native, same-container runtime. The host namespace option is retained because it resolved the observed Unraid cgroup-path mismatch. See [packaging notes](docs/container-packaging.md) for the design and validation limits.
 
 systemd and the AMP system agent use elevated capabilities and writable cgroup access. The example configuration also disables AppArmor confinement for the container. It does not use privileged mode.
 
@@ -108,13 +115,13 @@ systemd and the AMP system agent use elevated capabilities and writable cgroup a
 
 Production publishing targets `tareku99/amp-v3-dockerized`. Production releases receive a version tag, an `-amd64` alias, and the moving `latest` tag. Staging builds use separate branch-derived tags and do not update `latest`.
 
-Container release tags identify the packaging release. They do not pin the AMP package version: installation resolves packages from `AMP3_STREAM` when a replacement container first starts. AMP also provides its own application update mechanism.
+Container release tags identify the packaging release. The bundled AMP package version is resolved during the image build from its selected stream and recorded inside the image at `/usr/local/share/amp3-docker/package-version`. An unchanged image retains the same bundled seed when recreated. AMP also provides its own application update mechanism.
 
 ## Repository structure
 
 | Path | Purpose |
 |---|---|
-| [Dockerfile](Dockerfile) | Base image, runtime dependencies, and installer download |
+| [Dockerfile](Dockerfile) | Base image, runtime dependencies, and package extraction |
 | [entrypoint/](entrypoint/) | Startup validation, machine identity, and AMP bootstrap service |
 | [examples/docker-compose.yml](examples/docker-compose.yml) | Compose configuration with persistent storage and sample game ports |
 | [examples/docker-run.sh](examples/docker-run.sh) | Equivalent Docker CLI example |

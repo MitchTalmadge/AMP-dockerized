@@ -70,6 +70,8 @@ runs:
       uses: docker/build-push-action@v6
       with:
         context: .
+        build-args: |
+          AMP3_PACKAGE_CACHE_BUST=${{ github.run_id }}-${{ github.run_attempt }}
         platforms: linux/amd64
         push: ${{ inputs.publish == 'true' }}
         tags: ${{ steps.publish.outputs.tags }}

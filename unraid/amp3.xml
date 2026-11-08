@@ -10,22 +10,18 @@
   <Project>https://github.com/Tareku99/AMP-v3-dockerized</Project>
   <Support>https://github.com/Tareku99/AMP-v3-dockerized</Support>
   <ReadMe>https://github.com/Tareku99/AMP-v3-dockerized/blob/master/README.md</ReadMe>
-  <Overview>Community-maintained AMP 3 beta container for Linux/amd64. Requires an appropriate CubeCoders licence. The panel and managed game servers run together inside this container. First startup installs AMP and can take several minutes. Persistent state is stored in /opt/cubecoders/amp3/data. Only the panel port is mapped by default; each hosted game requires its own TCP/UDP port mappings. This container requires SYS_ADMIN, NET_ADMIN, and writable cgroup access for systemd and the AMP system agent. Unraid compatibility testing is pending.</Overview>
+  <Overview>EXPERIMENTAL STAGING DRAFT: Community AMP 3 container packaging using extracted official packages and unprivileged data seeding. Requires a CubeCoders licence. Native game-server launches still require systemd, the host cgroup namespace and writable cgroup mount. The image does not change Unraid host sysctls. This redesigned installation path has not been tested on Unraid. Persistent data is stored in /opt/cubecoders/amp3/data. Each game requires its own TCP/UDP port mappings.</Overview>
   <Category>GameServers: Status:Beta</Category>
   <Icon>https://raw.githubusercontent.com/Tareku99/AMP-v3-dockerized/master/assets/amp3-icon.png</Icon>
   <Beta>true</Beta>
   <License>Repository code, templates and metadata: MIT. AMP software and branding: separate CubeCoders terms.</License>
   <WebUI>http://[IP]:[PORT:8443]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/Tareku99/AMP-v3-dockerized/master/unraid/amp3.xml</TemplateURL>
-  <ExtraParams>--platform=linux/amd64 --cgroupns=host --tty --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --security-opt=apparmor=unconfined --tmpfs=/run --tmpfs=/run/lock --stop-signal=SIGRTMIN+3</ExtraParams>
+  <ExtraParams>--cgroupns=host --tty --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --security-opt=apparmor=unconfined --tmpfs=/run --tmpfs=/run/lock</ExtraParams>
   <PostArgs/>
-  <Config Name="Systemd log target" Target="SYSTEMD_LOG_TARGET" Default="console" Mode="" Description="Console output keeps systemd startup failures visible in Docker logs." Type="Variable" Display="advanced" Required="true" Mask="false">console</Config>
-  <Config Name="Systemd log level" Target="SYSTEMD_LOG_LEVEL" Default="info" Mode="" Description="Systemd log verbosity. Use debug temporarily for startup diagnostics." Type="Variable" Display="advanced" Required="true" Mask="false">info</Config>
   <Config Name="AMP panel port" Target="8443" Default="8443" Mode="tcp" Description="Host port for the AMP web panel. Container port remains 8443." Type="Port" Display="always" Required="true" Mask="false">8443</Config>
   <Config Name="AMP 3 data" Target="/opt/cubecoders/amp3/data" Default="/mnt/user/appdata/amp3" Mode="rw" Description="Persistent AMP state and game-server data. A dedicated AMP 3 directory is required." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/amp3</Config>
   <Config Name="Systemd cgroups" Target="/sys/fs/cgroup" Default="/sys/fs/cgroup" Mode="rw" Description="Required writable cgroup mount for systemd and the AMP system agent." Type="Path" Display="advanced" Required="true" Mask="false">/sys/fs/cgroup</Config>
-  <Config Name="AMP release stream" Target="AMP3_STREAM" Default="preview" Mode="" Description="AMP installation stream: preview, mainline, or development. The AMP 3 beta uses preview." Type="Variable" Display="always" Required="true" Mask="false">preview</Config>
-  <Config Name="Installer language" Target="AMP3_LANG" Default="en" Mode="" Description="Installer language: en, de, fr, or nl." Type="Variable" Display="always" Required="true" Mask="false">en</Config>
   <Config Name="Time zone" Target="TZ" Default="Etc/UTC" Mode="" Description="Container time zone, for example America/Denver." Type="Variable" Display="always" Required="true" Mask="false">Etc/UTC</Config>
   <Config Name="Internal panel port" Target="PORT" Default="8443" Mode="" Description="Internal AMP port. Must match the container port in the panel mapping and WebUI." Type="Variable" Display="advanced" Required="true" Mask="false">8443</Config>
 </Container>

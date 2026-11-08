@@ -8,7 +8,6 @@ services:
     platform: linux/amd64
     cgroup: host
     tty: true
-    stop_signal: SIGRTMIN+3
     cap_add:
       - SYS_ADMIN
       - NET_ADMIN
@@ -29,9 +28,5 @@ services:
       # - "34197:34197/udp"             # Factorio
     environment:
       PORT: "8443"
-      AMP3_STREAM: preview
-      AMP3_LANG: en
       TZ: Etc/UTC
-      SYSTEMD_LOG_TARGET: console
-      SYSTEMD_LOG_LEVEL: info
     restart: unless-stopped

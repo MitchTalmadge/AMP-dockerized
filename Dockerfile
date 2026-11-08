@@ -1,15 +1,17 @@
 FROM debian:13-slim
 
 ARG TARGETPLATFORM
-ARG AMP3_INSTALLER_URL=https://cdn-repo.c7rs.com/AMP3/getamp3.sh
+ARG AMP3_STREAM=preview
+ARG AMP3_REPO=https://cdn-repo.c7rs.com/amp3
 
 ENV container=docker \
     TZ=Etc/UTC \
     PORT=8443 \
-    AMP3_STREAM=preview \
-    AMP3_LANG=en \
-    AMP3_REPO=https://cdn-repo.c7rs.com/amp3 \
+    AMP3_STREAM=${AMP3_STREAM} \
+    AMP3_REPO=${AMP3_REPO} \
     AMP3_ORIGIN=https://cdn-downloads.c7rs.com/AMP3 \
+    SYSTEMD_LOG_TARGET=console \
+    SYSTEMD_LOG_LEVEL=info \
     LD_LIBRARY_PATH=./:/opt/cubecoders/amp3/
 
 ARG DEBIAN_FRONTEND=noninteractive
@@ -20,11 +22,12 @@ RUN if [ "$TARGETPLATFORM" != "linux/amd64" ]; then \
         exit 1; \
     fi
 
-# systemd runs the AMP 3 services and the first-boot installer. The remaining
+# systemd is required by AMP 3 native shard launches. The remaining
 # packages support common game server runtimes hosted inside this container.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
+    acl \
     curl \
     dbus \
     dirmngr \
@@ -32,6 +35,7 @@ RUN apt-get update && \
     iproute2 \
     jq \
     locales \
+    nftables \
     sed \
     systemd \
     systemd-sysv \
@@ -150,16 +154,27 @@ RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk
     update-alternatives --set keytool /usr/lib/jvm/temurin-25-jdk-amd64/bin/keytool
 ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jdk-amd64
 
-# Keep the official beta installer in the image; packages are installed on
-# first container boot while systemd is available.
-RUN wget -qO /usr/local/sbin/getamp3.sh "$AMP3_INSTALLER_URL" && \
-    chmod 0755 /usr/local/sbin/getamp3.sh
-
 COPY entrypoint/ /opt/entrypoint/
+ARG AMP3_PACKAGE_CACHE_BUST=manual
+# Download signed packages and extract their payloads, as the AMP 2 image does.
+# Data initialization is handled by this image, not the package post-installs.
+RUN printf '%s\n' "$AMP3_PACKAGE_CACHE_BUST" && \
+    bash /opt/entrypoint/install-packages.sh && \
+    groupadd --system amp && \
+    useradd --system --gid amp --home-dir /opt/cubecoders/amp3/data --shell /usr/sbin/nologin amp && \
+    install -d -m 0700 /etc/wireguard && \
+    install -d -m 0755 /etc/caddy && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 COPY entrypoint/amp3-bootstrap.service /etc/systemd/system/amp3-bootstrap.service
 RUN chmod 0755 /opt/entrypoint/main.sh /opt/entrypoint/amp3-bootstrap.sh && \
-    mkdir -p /etc/systemd/system/multi-user.target.wants /var/lib/amp3-docker && \
+    mkdir -p /etc/systemd/system/multi-user.target.wants && \
     ln -s /etc/systemd/system/amp3-bootstrap.service /etc/systemd/system/multi-user.target.wants/amp3-bootstrap.service && \
+    for unit in amp3 amp3-bus amp3-sysagent; do \
+      mkdir -p "/etc/systemd/system/$unit.service.d"; \
+      printf '[Unit]\nRequires=amp3-bootstrap.service\nAfter=amp3-bootstrap.service\n' >"/etc/systemd/system/$unit.service.d/container.conf"; \
+      ln -s "/usr/lib/systemd/system/$unit.service" "/etc/systemd/system/multi-user.target.wants/$unit.service"; \
+    done && \
     truncate -s 0 /etc/machine-id && \
     rm -f /var/lib/dbus/machine-id
 
