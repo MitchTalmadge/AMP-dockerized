@@ -1,130 +1,98 @@
 # AMP 3 in Docker
 
-An unofficial, community-maintained Docker image for CubeCoders AMP 3. The image runs AMP and its managed game servers together in one container, with systemd managing AMP services.
+Community-maintained container packaging for [CubeCoders AMP 3](https://cubecoders.com/AMP3), combining the control panel and its managed game servers in one Docker container.
 
-> **AMP 3 is in beta.** This image currently supports `linux/amd64` only. You need a valid AMP licence.
+**Status:** AMP 3 beta · **Platform:** Linux / amd64 · **Publishing target:** `tareku99/amp-v3-dockerized`
 
-## What the image does
+This project provides the Docker environment and startup integration. AMP itself is CubeCoders software and requires an appropriate licence. The project is not affiliated with or endorsed by CubeCoders.
 
-- Downloads CubeCoders' official AMP 3 installer while building the image.
-- Installs AMP 3 packages the first time a container starts.
-- Keeps AMP settings and server data in `/opt/cubecoders/amp3/data`.
-- Hosts the AMP panel and AMP-managed game servers in the same container.
+## Overview
 
-The first container start can take several minutes while AMP is installed. Restarts of that container do not rerun the installer. Recreating a container runs the installer again and uses the configured `AMP3_STREAM` channel.
+The image is based on Debian 13 and includes systemd, common game-server dependencies, multiple Java runtimes, Mono, and Wine. AMP-managed game-server processes run inside the same container as the panel.
 
-## Run with Docker Compose
+| Component | Behavior |
+|---|---|
+| Control panel | HTTP on container port `8443` by default |
+| Service management | systemd runs as PID 1 |
+| AMP installation | Official CubeCoders installer, executed on first container start |
+| Persistent state | `/opt/cubecoders/amp3/data` |
+| Game networking | Explicit TCP and UDP port mappings for each hosted game |
+| Architecture | `linux/amd64` |
 
-From the repository root:
+## Container lifecycle
 
-```bash
-docker compose -f examples/docker-compose.yml up -d --build
-```
+The official AMP 3 installer is downloaded during the Docker image build. AMP packages are installed when a newly created container first starts, using the configured release stream.
 
-Follow the first-start installer:
+An ordinary restart reuses that container's installed packages. A replacement container runs installation again against the persistent data directory. Startup can take several minutes while packages are downloaded and installed.
 
-```bash
-docker exec -it amp3 journalctl -u amp3-bootstrap.service -f
-```
+AMP account creation takes place in the web setup wizard. The first-run setup link is recorded in `setup-link.txt` inside the persistent data directory.
 
-When installation finishes, open `http://<docker-host>:8443/` and complete AMP 3's setup wizard. The setup link is also saved to `ampdata/setup-link.txt`.
+## Configuration reference
 
-Check services and logs with:
+| Environment variable | Default | Description |
+|---|---|---|
+| `PORT` | `8443` | Internal HTTP port for the AMP panel |
+| `AMP3_STREAM` | `preview` | Installation stream: `mainline`, `preview`, or `development` |
+| `AMP3_LANG` | `en` | Installer language: `en`, `de`, `fr`, or `nl` |
+| `AMP3_REPO` | `https://cdn-repo.c7rs.com/amp3` | AMP 3 package repository |
+| `AMP3_ORIGIN` | `https://cdn-downloads.c7rs.com/AMP3` | AMP 3 update origin |
+| `TZ` | `Etc/UTC` | Container time zone |
 
-```bash
-docker exec -it amp3 systemctl status amp3 amp3-bus amp3-sysagent
-docker exec -it amp3 journalctl -u amp3 -f
-```
+AMP manages its own `amp` system account. Panel users are managed by AMP.
 
-## Install on Unraid
+## Storage and networking
 
-Use the Docker image published by this repository. Replace `<namespace>/<image>` with the value configured as `DOCKERHUB_IMAGE` in the repository's GitHub settings.
+The persistent mount at `/opt/cubecoders/amp3/data` retains AMP state and server data independently of the container. The container's machine identity is also retained there. Container replacement and image updates depend on continued access to this directory; deleting it removes the persistent state.
 
-In Unraid, add a container with these settings:
+Only the panel port is mapped in the default Compose example. Game-server ports depend on the application and its AMP template. Typical examples include `25565/tcp` for Minecraft Java and `19132/udp` for Minecraft Bedrock.
+
+Host ports can differ from container ports. Docker applies changes to published port mappings when the container is recreated.
+
+## Unraid configuration reference
+
+The following values describe the intended configuration for an amd64 Unraid host. Unraid compatibility testing is pending.
 
 | Setting | Value |
 |---|---|
-| Repository | `<namespace>/<image>:latest` (or pin a version tag) |
-| Network type | `Bridge` |
-| AMP panel port | Host `8443` → container `8443`, TCP |
-| AMP data path | Host `/mnt/user/appdata/amp3` → container `/opt/cubecoders/amp3/data`, read/write |
-| Cgroup mount | Host `/sys/fs/cgroup` → container `/sys/fs/cgroup`, read/write |
-| Extra parameters | `--cap-add=SYS_ADMIN --cap-add=NET_ADMIN --security-opt apparmor=unconfined --tmpfs /run --tmpfs /run/lock` |
+| Image publishing target | `tareku99/amp-v3-dockerized` |
+| Production tag | `latest`, or a versioned release tag |
+| Network | Bridge |
+| Panel mapping | Host `8443` to container `8443/tcp` |
+| Example data mapping | `/mnt/user/appdata/amp3` to `/opt/cubecoders/amp3/data`, read/write |
+| Cgroup mapping | `/sys/fs/cgroup` to `/sys/fs/cgroup`, read/write |
+| Capabilities | `SYS_ADMIN`, `NET_ADMIN` |
+| Temporary filesystems | `/run`, `/run/lock` |
+| Security option | `apparmor=unconfined` |
 
-Keep the container port at `8443` to match `PORT`. If host port `8443` is already in use, change only the host-side port and open AMP at `http://<unraid-ip>:<host-port>/`.
+With the example data mapping, the first-run setup link resides at `/mnt/user/appdata/amp3/setup-link.txt`. The panel address uses the Unraid host's IP address and the mapped host port.
 
-Add these environment variables:
+## Runtime requirements
 
-| Variable | Value |
+The runtime targets Linux Docker hosts with systemd-compatible cgroups. Rootless Docker and Docker Desktop are outside the supported target environment.
+
+systemd and the AMP system agent use elevated capabilities and writable cgroup access. The example configuration also disables AppArmor confinement for the container. It does not use privileged mode.
+
+## Images and updates
+
+Production publishing targets `tareku99/amp-v3-dockerized`. Production releases receive a version tag, an `-amd64` alias, and the moving `latest` tag. Staging builds use separate branch-derived tags and do not update `latest`.
+
+Container release tags identify the packaging release. They do not pin the AMP package version: installation resolves packages from `AMP3_STREAM` when a replacement container first starts. AMP also provides its own application update mechanism.
+
+## Repository structure
+
+| Path | Purpose |
 |---|---|
-| `PORT` | `8443` |
-| `AMP3_STREAM` | `preview` |
-| `AMP3_LANG` | `en` |
-| `TZ` | Your time zone, such as `America/Denver` |
+| [Dockerfile](Dockerfile) | Base image, runtime dependencies, and installer download |
+| [entrypoint/](entrypoint/) | Startup validation, machine identity, and AMP bootstrap service |
+| [examples/docker-compose.yml](examples/docker-compose.yml) | Compose configuration with persistent storage and sample game ports |
+| [examples/docker-run.sh](examples/docker-run.sh) | Equivalent Docker CLI example |
+| [.github/actions/build-image/](.github/actions/build-image/) | Shared build and publishing action |
+| [.github/workflows/](.github/workflows/) | Production and Staging workflows |
 
-In Unraid's Advanced View, add the cgroup mount and extra parameters above. Do not enable privileged mode. The container needs the listed capabilities and writable cgroup access for systemd and the AMP system agent; these settings give it elevated access to the host.
+Pull requests and pushes to `master` build without publishing. Production publishing is triggered by `v*` tags or a manual production release. Staging branch builds publish staging tags.
 
-On the first start, open the container's Console and run `journalctl -u amp3-bootstrap.service -f` to follow installation. When it completes, open the panel and finish the setup wizard. The setup link is saved at `/mnt/user/appdata/amp3/setup-link.txt` with the path mapping above.
+## Project scope and support
 
-## Game-server ports
+This repository covers container packaging and startup integration. AMP features, beta availability, licensing, and application behavior are maintained by CubeCoders.
 
-Only the AMP panel port is published by default. Add a Docker port mapping for every TCP or UDP port required by each game you host. For example:
-
-```text
-25565/tcp   Minecraft Java
-19132/udp   Minecraft Bedrock
-```
-
-Add the same mappings in Unraid's container settings or to `examples/docker-compose.yml`. Check the game's AMP template for its required ports. After adding ports to a container, recreate it for Docker to apply the mappings.
-
-## Configuration
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `8443` | AMP web panel port inside the container. Map this container port in Docker. |
-| `AMP3_STREAM` | `preview` | Installer channel: `mainline`, `preview`, or `development`. |
-| `AMP3_LANG` | `en` | Installer language: `en`, `de`, `fr`, or `nl`. |
-| `AMP3_REPO` | `https://cdn-repo.c7rs.com/amp3` | AMP 3 package repository. |
-| `AMP3_ORIGIN` | `https://cdn-downloads.c7rs.com/AMP3` | AMP 3 update origin. |
-| `TZ` | `Etc/UTC` | Container time zone, for example `America/Denver`. |
-
-AMP creates and manages its own `amp` account. Create the first AMP user in the setup wizard.
-
-## Data and upgrades
-
-Persist `/opt/cubecoders/amp3/data` on the host. Back it up before replacing the container or changing the AMP stream. Do not remove the host data directory when updating the image.
-
-The installer runs once for each newly created container. Normal restarts reuse the installed packages; recreating the container installs the packages currently available on the selected `AMP3_STREAM`. AMP also has its own application update mechanism.
-
-## Docker image publishing
-
-Production and Staging are the two workflows. Both use the shared composite action in `.github/actions/build-image`; the action has no independent trigger or manual Run button. Production also checks pull requests without publishing.
-
-GitHub Actions builds the image for `linux/amd64`. Pull requests and pushes to `master` build the image without publishing it. Production images publish when a `v*` Git tag is pushed, or when **Deploy Production** is run manually with a tag. Staging branches publish a staging tag.
-
-Configure these repository settings under **Settings → Secrets and variables → Actions**:
-
-| Name | Type | Value |
-|---|---|---|
-| `DOCKERHUB_IMAGE` | Repository variable | Docker Hub repository, such as `yourname/amp3-dockerized` (no tag) |
-| `DOCKERHUB_USERNAME` | Repository secret | Docker Hub username |
-| `DOCKERHUB_TOKEN` | Repository secret | Docker Hub access token with permission to push to that repository |
-
-After setting these values, push a version tag to publish it and update `latest`:
-
-```bash
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The versioned tag is suitable for pinning an Unraid container to a specific release; `latest` follows the most recently published production tag. A release build fails with a configuration error if the Docker Hub repository or credentials are missing.
-
-## Host requirements and security
-
-Run the image on a Linux Docker host with systemd-compatible cgroups. Rootless Docker and Docker Desktop are not supported. The image only builds for `linux/amd64`.
-
-The container requires `SYS_ADMIN` and `NET_ADMIN`, writable access to the host cgroup filesystem, and the security settings shown above. These permissions are broader than a typical web application container. The Compose example does not use `privileged: true`.
-
-## Project and support
-
-This is a community container project and is not endorsed or supported by CubeCoders. For image issues, open an issue in [this repository](https://github.com/Tareku99/AMP-v3-dockerized/issues). For AMP behavior or licensing, use [CubeCoders' official support](https://discourse.cubecoders.com/).
+[Source repository](https://github.com/Tareku99/AMP-v3-dockerized) · [CubeCoders support](https://discourse.cubecoders.com/)
