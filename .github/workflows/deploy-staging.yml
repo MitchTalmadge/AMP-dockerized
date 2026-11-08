@@ -7,6 +7,7 @@ on:
       - Dockerfile
       - .dockerignore
       - entrypoint/**
+      - .github/actions/**
       - .github/workflows/**
   workflow_dispatch:
 
@@ -20,8 +21,14 @@ concurrency:
 jobs:
   build:
     if: startsWith(github.ref, 'refs/heads/staging')
-    uses: ./.github/workflows/build.yml
-    with:
-      for_deploy: true
-      image_tag: ${{ github.ref_name }}
-    secrets: inherit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and publish staging
+        uses: ./.github/actions/build-image
+        with:
+          publish: "true"
+          image: ${{ vars.DOCKERHUB_IMAGE }}
+          image_tag: ${{ github.ref_name }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          token: ${{ secrets.DOCKERHUB_TOKEN }}

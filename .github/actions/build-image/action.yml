@@ -1,0 +1,78 @@
+name: Build AMP 3 image
+description: Build the amd64 image and optionally publish production or staging tags
+inputs:
+  publish:
+    description: Push the image to Docker Hub
+    default: "false"
+  image:
+    description: Docker Hub namespace/image
+    default: ""
+  image_tag:
+    description: Release tag or staging branch name
+    default: ""
+  release:
+    description: Preserve the release tag and update latest
+    default: "false"
+  username:
+    description: Docker Hub username
+    default: ""
+  token:
+    description: Docker Hub access token
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Prepare publishing
+      if: inputs.publish == 'true'
+      id: publish
+      env:
+        IMAGE: ${{ inputs.image }}
+        INPUT_TAG: ${{ inputs.image_tag }}
+        RELEASE: ${{ inputs.release }}
+        DOCKERHUB_USERNAME: ${{ inputs.username }}
+        DOCKERHUB_TOKEN: ${{ inputs.token }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [[ ! "$IMAGE" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]; then
+          echo "::error::Set DOCKERHUB_IMAGE to a lowercase Docker Hub namespace/image, without a tag."
+          exit 1
+        fi
+        if [[ -z "$DOCKERHUB_USERNAME" || -z "$DOCKERHUB_TOKEN" ]]; then
+          echo "::error::Set the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN secrets."
+          exit 1
+        fi
+        TAG="$INPUT_TAG"
+        if [[ "$RELEASE" != "true" ]]; then
+          TAG=$(printf '%s' "$TAG" | sed -E 's/[^A-Za-z0-9_.-]+/-/g' | cut -c1-100)
+        fi
+        # Reserve space for the -amd64 suffix.
+        if [[ ! "$TAG" =~ ^[A-Za-z0-9_][A-Za-z0-9_.-]{0,121}$ ]]; then
+          echo "::error::Invalid Docker image tag."
+          exit 1
+        fi
+        TAGS="$IMAGE:$TAG,$IMAGE:$TAG-amd64"
+        if [[ "$RELEASE" == "true" ]]; then
+          TAGS="$TAGS,$IMAGE:latest"
+        fi
+        printf 'tags=%s\n' "$TAGS" >> "$GITHUB_OUTPUT"
+
+    - uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Docker Hub
+      if: inputs.publish == 'true'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ inputs.username }}
+        password: ${{ inputs.token }}
+
+    - name: Build and optionally publish
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        platforms: linux/amd64
+        push: ${{ inputs.publish == 'true' }}
+        tags: ${{ steps.publish.outputs.tags }}
+        provenance: false
+        cache-from: type=gha,scope=build-amd64
+        cache-to: type=gha,mode=max,scope=build-amd64

@@ -98,6 +98,8 @@ The installer runs once for each newly created container. Normal restarts reuse 
 
 ## Docker image publishing
 
+Production and Staging are the two workflows. Both use the shared composite action in `.github/actions/build-image`; the action has no independent trigger or manual Run button. Production also checks pull requests without publishing.
+
 GitHub Actions builds the image for `linux/amd64`. Pull requests and pushes to `master` build the image without publishing it. Production images publish when a `v*` Git tag is pushed, or when **Deploy Production** is run manually with a tag. Staging branches publish a staging tag.
 
 Configure these repository settings under **Settings → Secrets and variables → Actions**:

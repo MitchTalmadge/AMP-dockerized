@@ -4,6 +4,13 @@ on:
   push:
     branches: [master]
     tags: [v*]
+  pull_request:
+    paths:
+      - Dockerfile
+      - .dockerignore
+      - entrypoint/**
+      - .github/actions/**
+      - .github/workflows/**
   workflow_dispatch:
     inputs:
       tag:
@@ -15,15 +22,20 @@ permissions:
   contents: read
 
 concurrency:
-  group: production
+  group: production-${{ github.event.pull_request.number || 'release' }}
   cancel-in-progress: false
 
 jobs:
   build:
-    uses: ./.github/workflows/build.yml
-    with:
-      # Master builds only; version tags and manual releases publish.
-      for_deploy: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
-      image_tag: ${{ inputs.tag || github.ref_name }}
-      release: true
-    secrets: inherit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and optionally publish
+        uses: ./.github/actions/build-image
+        with:
+          publish: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}
+          image: ${{ vars.DOCKERHUB_IMAGE }}
+          image_tag: ${{ inputs.tag || github.ref_name }}
+          release: "true"
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          token: ${{ secrets.DOCKERHUB_TOKEN }}
