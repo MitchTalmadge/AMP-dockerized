@@ -1,0 +1,16 @@
+[Unit]
+Description=Install AMP 3 packages on first container boot
+After=network.target
+ConditionPathExists=!/var/lib/amp3-docker/install-complete
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/amp3-docker.env
+ExecStart=/opt/entrypoint/amp3-bootstrap.sh
+RemainAfterExit=yes
+TimeoutStartSec=0
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -2,3 +2,5 @@
 .vscode
 *.iml
 test
+getamp3.sh
+/ampdata/

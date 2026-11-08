@@ -1,18 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+IMAGE=amp-v3-dockerized:beta
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
+DATA_DIR=${AMP3_DATA_DIR:-"$PROJECT_ROOT/ampdata"}
+
+mkdir -p "$DATA_DIR"
+docker build --platform linux/amd64 -t "$IMAGE" "$PROJECT_ROOT"
+
 docker run -d \
-  --name amp \
+  --name amp3 \
   --restart unless-stopped \
-  --network bridge \
-  --mac-address 02:42:AC:XX:XX:XX \ # See README for MAC address info
-  -p 8080:8080 \                  # AMP Web UI
-  # Uncomment the ports below as needed for whatever game servers you'll be running.
-  # -p 34197:34197/udp \          # Factorio
-  # -p 27015:27015/udp \          # GMod, TF2, and other Source engine games
-  # -p 19132:19132/udp \          # Minecraft Bedrock Edition
-  # -p 25565:25565 \              # Minecraft Java Edition
-  # -p 21025:21025 \              # Starbound
-  # -p 5678-5680:5678-5680/udp \  # Valheim
-  -v $(pwd)/ampdata:/home/amp/ \
-  -e UID=120 \
-  -e GID=124 \
-  -e TZ=Etc/UTC \
-  mitchtalmadge/amp-dockerized:latest
+  --platform linux/amd64 \
+  --stop-signal SIGRTMIN+3 \
+  --cap-add SYS_ADMIN \
+  --cap-add NET_ADMIN \
+  --security-opt apparmor=unconfined \
+  --tmpfs /run \
+  --tmpfs /run/lock \
+  --volume "$DATA_DIR:/opt/cubecoders/amp3/data" \
+  --volume /sys/fs/cgroup:/sys/fs/cgroup:rw \
+  --publish 8443:8443/tcp \
+  --env PORT=8443 \
+  --env AMP3_STREAM=preview \
+  --env AMP3_LANG=en \
+  --env TZ=Etc/UTC \
+  "$IMAGE"
+
+echo "AMP 3 is starting. Complete the first-run wizard at http://localhost:8443/."
+echo "Add -p HOST:CONTAINER/tcp or /udp mappings for each game server port you use."

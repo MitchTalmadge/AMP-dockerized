@@ -1,72 +1,65 @@
 FROM debian:13-slim
- 
-ARG TARGETPLATFORM # Set by Docker, see https://docs.docker.com/engine/reference/builder/#automatic-platform-args-in-the-global-scope
 
-ENV UID=1000
-ENV GID=1000
-ENV TZ=Etc/UTC
-ENV PORT=8080
-ENV USERNAME=admin
-ENV PASSWORD=password
-ENV IPBINDING=0.0.0.0
+ARG TARGETPLATFORM
+ARG AMP3_INSTALLER_URL=https://cdn-repo.c7rs.com/AMP3/getamp3.sh
 
-ENV AMP_AUTO_UPDATE=true
-ENV AMP_RELEASE_STREAM=Mainline
-ENV AMP_SUPPORT_LEVEL=UNSUPPORTED
-ENV AMP_SUPPORT_TOKEN=AST0/MTAD
-ENV AMP_SUPPORT_TAGS="nosupport docker community unofficial unraid"
-ENV AMP_SUPPORT_URL="https://github.com/MitchTalmadge/AMP-dockerized/"
-ENV LD_LIBRARY_PATH="./:/opt/cubecoders/amp/:/AMP/"
+ENV container=docker \
+    TZ=Etc/UTC \
+    PORT=8443 \
+    AMP3_STREAM=preview \
+    AMP3_LANG=en \
+    AMP3_REPO=https://cdn-repo.c7rs.com/amp3 \
+    AMP3_ORIGIN=https://cdn-downloads.c7rs.com/AMP3 \
+    LD_LIBRARY_PATH=./:/opt/cubecoders/amp3/
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-# Initialize
+# The AMP 3 beta installer currently supports x86_64 only.
+RUN if [ "$TARGETPLATFORM" != "linux/amd64" ]; then \
+        echo "AMP 3 beta currently supports linux/amd64 only (got ${TARGETPLATFORM:-unknown})." >&2; \
+        exit 1; \
+    fi
+
+# systemd runs the AMP 3 services and the first-boot installer. The remaining
+# packages support common game server runtimes hosted inside this container.
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    apt-transport-https \
+    ca-certificates \
+    curl \
+    dbus \
     dirmngr \
     gnupg \
+    iproute2 \
     jq \
     locales \
     sed \
+    systemd \
+    systemd-sysv \
     tzdata \
     wget && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Configure Locales
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
 
-# Install Mono
+# Mono is still required by some AMP game applications.
 RUN apt-get update && \
-    apt-get install -y mono-devel && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
+    apt-get install -y --no-install-recommends mono-devel && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Declare and install AMP dependencies
-
-# AMP core dependencies
+# Native dependencies used by common game server applications.
 ARG AMPDEPS="\
     bzip2 \
     coreutils \
-    curl \
     gdb \
     git \
     git-lfs \
-    gnupg \
     iputils-ping \
     libc++-dev \
     libc6 \
@@ -76,7 +69,6 @@ ARG AMPDEPS="\
     libpulse-dev \
     libsqlite3-0 \
     libzstd1 \
-    locales \
     numactl \
     procps \
     socat \
@@ -85,20 +77,18 @@ ARG AMPDEPS="\
     xz-utils \
     libicu76"
 
-# srcds (TF2, GMod, ...) dependencies
 ARG SRCDSDEPS="\
     lib32gcc-s1 \
     lib32stdc++6 \
     lib32z1 \
     libbz2-1.0:i386 \
-    libcurl3-gnutls:i386 \
-    libcurl4 \
+    libcurl3t64-gnutls:i386 \
+    libcurl4t64 \
     libncurses6:i386 \
     libsdl2-2.0-0 \
     libsdl2-2.0-0:i386 \
     libtinfo6:i386"
 
-# Needed for games that require Wine and Xvfb
 ARG WINEXVFB="\
     fonts-wine \
     libwine \
@@ -114,119 +104,65 @@ ARG WINEXVFB="\
     xauth \
     xvfb"
 
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        dpkg --add-architecture aarch64 && \
-        apt-get update && \
-        apt-get install -y \
-        $AMPDEPS; \
-    else \ 
-        dpkg --add-architecture i386 && \
-        apt-get update && \
-        apt-get install -y \
-        $AMPDEPS \
-        $SRCDSDEPS \
-        $WINEXVFB; \
-    fi && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
+RUN dpkg --add-architecture i386 && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends $AMPDEPS $SRCDSDEPS $WINEXVFB && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install Adoptium JDK
+# Install Adoptium JDKs commonly used by AMP game applications.
 RUN wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | tee /etc/apt/keyrings/adoptium.asc && \
     echo "deb [signed-by=/etc/apt/keyrings/adoptium.asc] https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list && \
     apt-get update && \
-    apt-get install -y temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk && \
+    apt-get install -y --no-install-recommends temurin-8-jdk temurin-11-jdk temurin-17-jdk temurin-21-jdk temurin-25-jdk && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Set up Java alternatives with JDK 25 as the highest priority (default)
-# Use architecture-specific paths for both ARM64 and AMD64
-# Install each tool separately as master alternatives (not slaves)
-RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        JDK_SUFFIX="-arm64"; \
-    else \
-        JDK_SUFFIX="-amd64"; \
-    fi && \
-    # Install java alternatives
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/java 2500 && \
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/java 2100 && \
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/java 1700 && \
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/java 1100 && \
-    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/java 800 && \
-    # Install javac alternatives
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/javac 2500 && \
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/javac 2100 && \
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/javac 1700 && \
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/javac 1100 && \
-    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/javac 800 && \
-    # Install jar alternatives
-    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jar 2500 && \
-    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/jar 2100 && \
-    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/jar 1700 && \
-    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/jar 1100 && \
-    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/jar 800 && \
-    # Install jarsigner alternatives
-    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jarsigner 2500 && \
-    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/jarsigner 2100 && \
-    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/jarsigner 1700 && \
-    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/jarsigner 1100 && \
-    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/jarsigner 800 && \
-    # Install keytool alternatives
-    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/keytool 2500 && \
-    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-21-jdk${JDK_SUFFIX}/bin/keytool 2100 && \
-    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-17-jdk${JDK_SUFFIX}/bin/keytool 1700 && \
-    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-11-jdk${JDK_SUFFIX}/bin/keytool 1100 && \
-    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-8-jdk${JDK_SUFFIX}/bin/keytool 800 && \
-    # Explicitly set JDK 25 as the default for all tools
-    update-alternatives --set java /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/java && \
-    update-alternatives --set javac /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/javac && \
-    update-alternatives --set jar /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jar && \
-    update-alternatives --set jarsigner /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/jarsigner && \
-    update-alternatives --set keytool /usr/lib/jvm/temurin-25-jdk${JDK_SUFFIX}/bin/keytool
+RUN update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-25-jdk-amd64/bin/java 2500 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-21-jdk-amd64/bin/java 2100 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-17-jdk-amd64/bin/java 1700 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-11-jdk-amd64/bin/java 1100 && \
+    update-alternatives --install /usr/bin/java java /usr/lib/jvm/temurin-8-jdk-amd64/bin/java 800 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-25-jdk-amd64/bin/javac 2500 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-21-jdk-amd64/bin/javac 2100 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-17-jdk-amd64/bin/javac 1700 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-11-jdk-amd64/bin/javac 1100 && \
+    update-alternatives --install /usr/bin/javac javac /usr/lib/jvm/temurin-8-jdk-amd64/bin/javac 800 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-25-jdk-amd64/bin/jar 2500 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-21-jdk-amd64/bin/jar 2100 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-17-jdk-amd64/bin/jar 1700 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-11-jdk-amd64/bin/jar 1100 && \
+    update-alternatives --install /usr/bin/jar jar /usr/lib/jvm/temurin-8-jdk-amd64/bin/jar 800 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-25-jdk-amd64/bin/jarsigner 2500 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-21-jdk-amd64/bin/jarsigner 2100 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-17-jdk-amd64/bin/jarsigner 1700 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-11-jdk-amd64/bin/jarsigner 1100 && \
+    update-alternatives --install /usr/bin/jarsigner jarsigner /usr/lib/jvm/temurin-8-jdk-amd64/bin/jarsigner 800 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-25-jdk-amd64/bin/keytool 2500 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-21-jdk-amd64/bin/keytool 2100 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-17-jdk-amd64/bin/keytool 1700 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-11-jdk-amd64/bin/keytool 1100 && \
+    update-alternatives --install /usr/bin/keytool keytool /usr/lib/jvm/temurin-8-jdk-amd64/bin/keytool 800 && \
+    update-alternatives --set java /usr/lib/jvm/temurin-25-jdk-amd64/bin/java && \
+    update-alternatives --set javac /usr/lib/jvm/temurin-25-jdk-amd64/bin/javac && \
+    update-alternatives --set jar /usr/lib/jvm/temurin-25-jdk-amd64/bin/jar && \
+    update-alternatives --set jarsigner /usr/lib/jvm/temurin-25-jdk-amd64/bin/jarsigner && \
+    update-alternatives --set keytool /usr/lib/jvm/temurin-25-jdk-amd64/bin/keytool
+ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jdk-amd64
 
-# Set JAVA_HOME environment variable to point to JDK 25
-# This will be set at runtime via the entrypoint scripts based on architecture
+# Keep the official beta installer in the image; packages are installed on
+# first container boot while systemd is available.
+RUN wget -qO /usr/local/sbin/getamp3.sh "$AMP3_INSTALLER_URL" && \
+    chmod 0755 /usr/local/sbin/getamp3.sh
 
-# Manually install ampinstmgr by extracting it from the deb package.
-# Docker doesn't have systemctl and other things that AMP's deb postinst expects,
-# so we can't use apt to install ampinstmgr.
+COPY entrypoint/ /opt/entrypoint/
+COPY entrypoint/amp3-bootstrap.service /etc/systemd/system/amp3-bootstrap.service
+RUN chmod 0755 /opt/entrypoint/main.sh /opt/entrypoint/amp3-bootstrap.sh && \
+    mkdir -p /etc/systemd/system/multi-user.target.wants /var/lib/amp3-docker && \
+    ln -s /etc/systemd/system/amp3-bootstrap.service /etc/systemd/system/multi-user.target.wants/amp3-bootstrap.service && \
+    truncate -s 0 /etc/machine-id && \
+    rm -f /var/lib/dbus/machine-id
 
-# The latest ampinstmgr version, passed in by CI. Referencing it below busts the
-# build cache for this layer whenever a new version is released; without it, a
-# cached layer would silently keep shipping the old ampinstmgr.
-ARG AMP_VERSION=
-
-# Add CubeCoders repository and key.
-# Uses the deb822 .sources format and keyring location from the official
-# getamp.sh installer (addRepo), as required on Debian 12+.
-RUN install -d -m 0755 /usr/share/keyrings && \
-    wget -qO /usr/share/keyrings/cdn-repo.c7rs.com.gpg https://cdn-repo.c7rs.com/archive.key && \
-    if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-        REPO_SUFFIX="aarch64/"; \
-    else \
-        REPO_SUFFIX=""; \
-    fi && \
-    printf "Types: deb\nURIs: https://cdn-repo.c7rs.com/%s\nSuites: debian/\nArchitectures: %s\nSigned-By: /usr/share/keyrings/cdn-repo.c7rs.com.gpg\n" "${REPO_SUFFIX}" "$(dpkg --print-architecture)" > /etc/apt/sources.list.d/cdn-repo.c7rs.com.sources && \
-    apt-get update && \
-    # Just download (don't actually install) ampinstmgr.
-    # Pin the version when CI provides one; fall back to the latest otherwise.
-    apt-get install -y --no-install-recommends --download-only "ampinstmgr${AMP_VERSION:+=${AMP_VERSION}}" && \
-    # Extract ampinstmgr from downloaded package
-    mkdir -p /tmp/ampinstmgr && \
-    dpkg-deb -x /var/cache/apt/archives/ampinstmgr_*.deb /tmp/ampinstmgr && \
-    mv /tmp/ampinstmgr/opt/cubecoders/amp/ampinstmgr /usr/local/bin/ampinstmgr && \
-    apt-get -y clean && \
-    apt-get -y autoremove --purge && \
-    rm -rf \
-    /tmp/* \
-    /var/lib/apt/lists/* \
-    /var/tmp/*
-
-# Set up environment
-COPY entrypoint /opt/entrypoint
-RUN chmod -R +x /opt/entrypoint
-
+EXPOSE 8443/tcp
+STOPSIGNAL SIGRTMIN+3
 ENTRYPOINT ["/opt/entrypoint/main.sh"]

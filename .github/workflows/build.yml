@@ -17,41 +17,35 @@ on:
 jobs:
   build:
     name: "Build"
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        arch: [amd64,arm64]
+        arch: [amd64]
     env:
-      # Set the DOCKERHUB_IMAGE repository variable to push elsewhere (e.g. in forks).
-      IMAGE: ${{ vars.DOCKERHUB_IMAGE || 'mitchtalmadge/amp-dockerized' }}
+      # The release workflows provide this repository variable.
+      IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
     steps:
       - name: "Checkout Git Repo"
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: "Get Latest ampinstmgr Version"
-        # Passed to the build as a build-arg so that the layer cache is busted
-        # whenever CubeCoders releases a new version. Without this, a fully
-        # cached build would keep shipping the previously downloaded ampinstmgr.
-        id: amp_version
+      - name: "Validate Docker Hub publishing configuration"
+        if: ${{ inputs.for_deploy == true }}
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            URL="https://cdn-repo.c7rs.com/aarch64/debian/Packages"
-          else
-            URL="https://cdn-repo.c7rs.com/debian/Packages"
-          fi
-          VERSION=$(curl -fsSL "${URL}" | awk '
-            /^Package: ampinstmgr$/ { found=1; next }
-            /^Package:/ { found=0 }
-            found && /^Version:/ { print $2 }
-          ' | sort -V | tail -n 1)
-          if [[ -z "${VERSION}" ]]; then
-            echo "::error::Could not determine the latest ampinstmgr version from the CubeCoders repository."
+          set -euo pipefail
+          if [[ ! "$IMAGE" =~ ^[a-z0-9][a-z0-9._-]*/[a-z0-9][a-z0-9._-]*$ ]]; then
+            echo "::error::Set DOCKERHUB_IMAGE to a lowercase Docker Hub namespace/image (without a tag)."
             exit 1
           fi
-          echo "Latest ampinstmgr version: ${VERSION}"
-          echo "VERSION=${VERSION}" >> "$GITHUB_OUTPUT"
+          if [[ -z "$DOCKERHUB_USERNAME" || -z "$DOCKERHUB_TOKEN" ]]; then
+            echo "::error::Set the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN repository secrets."
+            exit 1
+          fi
 
       - name: "Set up Docker Buildx"
         uses: docker/setup-buildx-action@v3
@@ -68,13 +62,10 @@ jobs:
           context: .
           platforms: linux/${{ matrix.arch }}
           provenance: false
-          build-args: |
-            AMP_VERSION=${{ steps.amp_version.outputs.VERSION }}
           cache-from: type=gha,scope=build-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=build-${{ matrix.arch }}
-          # When deploying, push the image by digest; the deploy workflow then
-          # stitches the per-arch digests into multi-arch manifests without the
-          # image ever being exported to a tar file.
+          # When deploying, push the architecture image by digest; the deploy
+          # workflow then attaches the requested tags without exporting a tarball.
           outputs: ${{ inputs.for_deploy == true && format('type=image,name={0},push-by-digest=true,name-canonical=true,push=true', env.IMAGE) || '' }}
 
       - name: "Export Digest"
