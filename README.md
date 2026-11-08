@@ -72,6 +72,26 @@ The following values describe the intended configuration for an amd64 Unraid hos
 
 With the example data mapping, the first-run setup link resides at `/mnt/user/appdata/amp3/setup-link.txt`. The panel address uses the Unraid host's IP address and the mapped host port.
 
+### Persistent MAC address
+
+A unique, fixed MAC address is recommended before AMP licence activation so the container's network identity remains stable when it is recreated. Earlier AMP container deployments required this to avoid licence resets; an equivalent requirement has not been confirmed for AMP 3.
+
+Generate an address once in the **Unraid terminal**:
+
+```bash
+printf '02:42:AC:%s\n' "$(od -An -N3 -tx1 /dev/urandom | xargs | tr ' ' ':')"
+```
+
+The `02` prefix identifies a locally administered, unicast address. The remaining bytes include a randomly generated suffix.
+
+In the container editor, enable **Advanced View** and append the following to **Extra Parameters**, replacing `YOUR_GENERATED_MAC` with the command's output:
+
+```text
+--mac-address=YOUR_GENERATED_MAC
+```
+
+Keep the existing extra parameters. Each container needs its own address, distinct from other devices on the same network. Reuse the chosen address for subsequent updates and container replacements; do not generate a new one at each startup or copy the host's physical MAC address.
+
 ## Runtime requirements
 
 The runtime targets Linux Docker hosts with systemd-compatible cgroups. Rootless Docker and Docker Desktop are outside the supported target environment.
