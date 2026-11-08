@@ -1,5 +1,7 @@
 # AMP 3 in Docker
 
+<img src="assets/amp3-icon.png" width="128" alt="AMP emblem with an AMP 3 version badge">
+
 Community-maintained container packaging for [CubeCoders AMP 3](https://cubecoders.com/AMP3), combining the control panel and its managed game servers in one Docker container.
 
 **Status:** AMP 3 beta · **Platform:** Linux / amd64 · **Publishing target:** `tareku99/amp-v3-dockerized`
@@ -48,7 +50,11 @@ Only the panel port is mapped in the default Compose example. Game-server ports 
 
 Host ports can differ from container ports. Docker applies changes to published port mappings when the container is recreated.
 
-## Unraid configuration reference
+## Unraid setup
+
+The template is named **amp3** and is available as [unraid/amp3.xml](unraid/amp3.xml). It defines the published image, panel port, persistent data path, and required runtime permissions, targeting `tareku99/amp-v3-dockerized:latest`.
+
+For manual installation, the template file belongs at `/boot/config/plugins/dockerMan/templates-user/my-amp3.xml` on the Unraid boot device. Saved templates are available from **Docker > Add Container > Template**, where the entry is named **amp3**. Community Applications availability depends on submission review and catalog publication.
 
 The following values describe the intended configuration for an amd64 Unraid host. Unraid compatibility testing is pending.
 
@@ -86,12 +92,15 @@ Container release tags identify the packaging release. They do not pin the AMP p
 | [entrypoint/](entrypoint/) | Startup validation, machine identity, and AMP bootstrap service |
 | [examples/docker-compose.yml](examples/docker-compose.yml) | Compose configuration with persistent storage and sample game ports |
 | [examples/docker-run.sh](examples/docker-run.sh) | Equivalent Docker CLI example |
+| [unraid/amp3.xml](unraid/amp3.xml) | AMP 3 container template for Unraid Docker Manager |
 | [.github/actions/build-image/](.github/actions/build-image/) | Shared build and publishing action |
 | [.github/workflows/](.github/workflows/) | Production and Staging workflows |
 
 Pull requests and pushes to `master` build without publishing. Production publishing is triggered by `v*` tags or a manual production release. Staging branch builds publish staging tags.
 
 ## Project scope and support
+
+Repository code, templates, metadata, and documentation are covered by the [MIT license](LICENSE), with upstream attribution preserved. AMP software and branding have [separate licensing and attribution](LICENSE.md).
 
 This repository covers container packaging and startup integration. AMP features, beta availability, licensing, and application behavior are maintained by CubeCoders.
 

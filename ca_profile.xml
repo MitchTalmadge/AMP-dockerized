@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CommunityApplications>
+  <Profile>AMP 3 Docker packaging and Unraid template maintained by Tareku99. The AMP panel and its managed game servers run in one Linux/amd64 container. AMP 3 is beta software and requires an appropriate CubeCoders licence. This community project is not affiliated with CubeCoders. Project documentation and container configuration references are available in the repository README. Unraid compatibility testing is pending.</Profile>
+  <Icon>https://raw.githubusercontent.com/Tareku99/AMP-v3-dockerized/master/assets/amp3-icon.png</Icon>
+  <WebPage>https://github.com/Tareku99/AMP-v3-dockerized</WebPage>
+</CommunityApplications>
