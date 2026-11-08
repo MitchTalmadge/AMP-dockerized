@@ -76,15 +76,17 @@ With the example data mapping, the first-run setup link resides at `/mnt/user/ap
 
 A unique, fixed MAC address is recommended before AMP licence activation so the container's network identity remains stable when it is recreated. Earlier AMP container deployments required this to avoid licence resets; an equivalent requirement has not been confirmed for AMP 3.
 
-Generate an address once in the **Unraid terminal**:
+Generate an address once using the same website referenced by the original AMP Docker image:
 
-```bash
-printf '02:42:AC:%s\n' "$(od -An -N3 -tx1 /dev/urandom | xargs | tr ' ' ':')"
-```
+1. Open [MiniWebtool's MAC Address Generator](https://miniwebtool.com/mac-address-generator/).
+2. Enter `02:42:AC` in **MAC Address Prefix**.
+3. Choose the colon-separated format (`:`).
+4. Select **Unicast** and **Locally administered** if address-type options are shown.
+5. Generate one address and copy the full result.
 
 The `02` prefix identifies a locally administered, unicast address. The remaining bytes include a randomly generated suffix.
 
-In the container editor, enable **Advanced View** and append the following to **Extra Parameters**, replacing `YOUR_GENERATED_MAC` with the command's output:
+In the container editor, enable **Advanced View** and append the following to **Extra Parameters**, replacing `YOUR_GENERATED_MAC` with the generated address:
 
 ```text
 --mac-address=YOUR_GENERATED_MAC
