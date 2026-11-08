@@ -66,6 +66,8 @@ The following values describe the intended configuration for an amd64 Unraid hos
 | Panel mapping | Host `8443` to container `8443/tcp` |
 | Example data mapping | `/mnt/user/appdata/amp3` to `/opt/cubecoders/amp3/data`, read/write |
 | Cgroup mapping | `/sys/fs/cgroup` to `/sys/fs/cgroup`, read/write |
+| Cgroup namespace | Host (`--cgroupns=host`) |
+| Console | Pseudo-TTY (`--tty`) with systemd logging to `console` at `info` level |
 | Capabilities | `SYS_ADMIN`, `NET_ADMIN` |
 | Temporary filesystems | `/run`, `/run/lock` |
 | Security option | `apparmor=unconfined` |
@@ -97,6 +99,8 @@ Keep the existing extra parameters. Each container needs its own address, distin
 ## Runtime requirements
 
 The runtime targets Linux Docker hosts with systemd-compatible cgroups. Rootless Docker and Docker Desktop are outside the supported target environment.
+
+The container shares the host cgroup namespace so its cgroup paths match the bind-mounted hierarchy. A pseudo-TTY provides the console required for visible systemd startup logs. AMP installation and service logs remain available through `journalctl` inside the container.
 
 systemd and the AMP system agent use elevated capabilities and writable cgroup access. The example configuration also disables AppArmor confinement for the container. It does not use privileged mode.
 

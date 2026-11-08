@@ -6,6 +6,7 @@ This repository builds a community-maintained, all-in-one Docker image for AMP 3
 
 - Target platform: Linux/amd64.
 - systemd runs as PID 1 in the container.
+- Runtime examples use the host cgroup namespace with the writable host cgroup mount. A pseudo-TTY and console logging expose systemd startup diagnostics.
 - On first container start, `amp3-bootstrap.service` runs CubeCoders' official installer with `--host`, so AMP-managed game servers run in this container.
 - Persistent AMP data is stored at `/opt/cubecoders/amp3/data`.
 - The Docker build downloads the installer; package installation happens at first container start.

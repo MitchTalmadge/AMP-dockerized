@@ -13,6 +13,8 @@ docker run -d \
   --name amp3 \
   --restart unless-stopped \
   --platform linux/amd64 \
+  --cgroupns host \
+  --tty \
   --stop-signal SIGRTMIN+3 \
   --cap-add SYS_ADMIN \
   --cap-add NET_ADMIN \
@@ -26,6 +28,8 @@ docker run -d \
   --env AMP3_STREAM=preview \
   --env AMP3_LANG=en \
   --env TZ=Etc/UTC \
+  --env SYSTEMD_LOG_TARGET=console \
+  --env SYSTEMD_LOG_LEVEL=info \
   "$IMAGE"
 
 echo "AMP 3 is starting. Complete the first-run wizard at http://localhost:8443/."

@@ -17,8 +17,10 @@
   <License>Repository code, templates and metadata: MIT. AMP software and branding: separate CubeCoders terms.</License>
   <WebUI>http://[IP]:[PORT:8443]/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/Tareku99/AMP-v3-dockerized/master/unraid/amp3.xml</TemplateURL>
-  <ExtraParams>--platform=linux/amd64 --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --security-opt=apparmor=unconfined --tmpfs=/run --tmpfs=/run/lock --stop-signal=SIGRTMIN+3</ExtraParams>
+  <ExtraParams>--platform=linux/amd64 --cgroupns=host --tty --cap-add=SYS_ADMIN --cap-add=NET_ADMIN --security-opt=apparmor=unconfined --tmpfs=/run --tmpfs=/run/lock --stop-signal=SIGRTMIN+3</ExtraParams>
   <PostArgs/>
+  <Config Name="Systemd log target" Target="SYSTEMD_LOG_TARGET" Default="console" Mode="" Description="Console output keeps systemd startup failures visible in Docker logs." Type="Variable" Display="advanced" Required="true" Mask="false">console</Config>
+  <Config Name="Systemd log level" Target="SYSTEMD_LOG_LEVEL" Default="info" Mode="" Description="Systemd log verbosity. Use debug temporarily for startup diagnostics." Type="Variable" Display="advanced" Required="true" Mask="false">info</Config>
   <Config Name="AMP panel port" Target="8443" Default="8443" Mode="tcp" Description="Host port for the AMP web panel. Container port remains 8443." Type="Port" Display="always" Required="true" Mask="false">8443</Config>
   <Config Name="AMP 3 data" Target="/opt/cubecoders/amp3/data" Default="/mnt/user/appdata/amp3" Mode="rw" Description="Persistent AMP state and game-server data. A dedicated AMP 3 directory is required." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/amp3</Config>
   <Config Name="Systemd cgroups" Target="/sys/fs/cgroup" Default="/sys/fs/cgroup" Mode="rw" Description="Required writable cgroup mount for systemd and the AMP system agent." Type="Path" Display="advanced" Required="true" Mask="false">/sys/fs/cgroup</Config>
