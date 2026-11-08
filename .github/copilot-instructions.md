@@ -18,7 +18,7 @@ This repository builds a community-maintained, all-in-one Docker image for AMP 3
 - `entrypoint/amp3-bootstrap.service`: first-start installer service.
 - `entrypoint/amp3-bootstrap.sh`: invokes the official AMP 3 installer.
 - `examples/docker-compose.yml`: local Linux Compose setup and sample port mappings.
-- `.github/workflows/build.yml`: amd64 build and optional Docker Hub digest publishing.
+- `.github/workflows/build.yml`: shared amd64 build and optional Docker Hub publishing.
 - `.github/workflows/deploy-prod.yml`: production version tags and `latest`.
 - `.github/workflows/deploy-staging.yml`: staging image tags.
 
